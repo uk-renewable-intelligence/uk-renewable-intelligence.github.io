@@ -213,6 +213,15 @@ def run(project_root: Path) -> dict:
             and brier_skill >= 0.02
         )
 
+        if promoted:
+            product_decision = "publish calibrated probability"
+        elif horizon == 2 and len(rolling) >= 3 and raw_metrics["roc_auc"] >= 0.65:
+            product_decision = "ranking signal only"
+        elif horizon == 3 and len(rolling) >= 3 and raw_metrics["roc_auc"] > 0.5:
+            product_decision = "research only"
+        else:
+            product_decision = "withheld"
+
         report["horizons"][str(horizon)] = {
             "status": "evaluated",
             "rolling_cohorts": int(rolling_frame["snapshot_date"].nunique()),
@@ -225,7 +234,7 @@ def run(project_root: Path) -> dict:
             "platt_slope": float(platt_model.coef_[0, 0]),
             "platt_intercept": float(platt_model.intercept_[0]),
             "brier_skill_vs_base_rate": float(brier_skill),
-            "promotion_decision": "promote" if promoted else "retain published baseline",
+            "promotion_decision": product_decision,
             "uncalibrated": raw_metrics,
             "direct_horizon_empirical": metrics(
                 test["target"], test["direct_probability"].to_numpy()
@@ -239,8 +248,9 @@ def run(project_root: Path) -> dict:
         }
 
     report["overall_decision"] = (
-        "Retain the published research baseline. The two-year model ranks projects usefully, "
-        "but no calibration challenger clears the pre-declared promotion threshold across horizons."
+        "Release the two-year empirical score as a relative ranking signal only. Withhold "
+        "literal project probabilities and the five-year output until a calibrated model "
+        "clears the pre-declared release gate."
     )
     return report
 

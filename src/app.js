@@ -50,13 +50,13 @@ const showToast = (message) => {
 };
 
 qs("#snapshot-date").textContent = formatDate(data.latestSnapshot);
-qs("#hero-expected").textContent = formatMw(data.kpis.expected3yMw, true);
-qs("#hero-active").textContent = formatNumber(data.kpis.activeProjects);
-qs("#hero-updated").textContent = formatDate(data.dataset.latestRecordUpdate, { month: "short", year: "numeric" });
+qs("#hero-expected").textContent = Number(data.model.rollingAudit.horizons["2"].rocAuc).toFixed(3);
+qs("#hero-active").textContent = "Ranking only";
+qs("#hero-updated").textContent = formatNumber(data.model.rollingAudit.horizons["2"].rollingCohorts);
 qs("#kpi-records").textContent = formatNumber(data.kpis.datasetProjects);
 qs("#kpi-projects").textContent = formatNumber(data.kpis.activeProjects);
 qs("#kpi-capacity").textContent = formatMw(data.kpis.pipelineCapacityMw, true);
-qs("#kpi-expected").textContent = formatMw(data.kpis.expected3yMw, true);
+qs("#kpi-expected").textContent = formatNumber(data.kpis.strongerSignalProjects);
 qs("#explorer-total").textContent = formatNumber(data.kpis.datasetProjects);
 qs("#coverage-records").textContent = formatNumber(data.kpis.datasetProjects);
 qs("#coverage-forecasts").textContent = formatNumber(data.kpis.forecastCoverage);
@@ -71,13 +71,14 @@ qs("#stage-chart").innerHTML = stages.map((item) => `
   </div>
 `).join("");
 
-const maxTechExpected = Math.max(...data.groups.technology.map((item) => item.expected_3y_mw));
-qs("#tech-chart").innerHTML = data.groups.technology.slice(0, 7).map((item) => `
+const deliveryTechnology = data.groups.deliveryTechnology.slice(0, 7);
+const maxTechSignal = Math.max(1, ...deliveryTechnology.map((item) => item.stronger_signal_projects));
+qs("#tech-chart").innerHTML = deliveryTechnology.map((item) => `
   <div class="tech-item">
     <span>${escapeHtml(item.name)}</span>
-    <small>${formatNumber(item.projects)} projects</small>
-    <strong>${formatMw(item.expected_3y_mw)}</strong>
-    <span class="tech-meter"><i style="width:${100 * item.expected_3y_mw / maxTechExpected}%"></i></span>
+    <small>${formatNumber(item.stronger_signal_projects)} of ${formatNumber(item.forecast_projects)} forecastable projects</small>
+    <strong>${formatPercent(item.stronger_signal_share, 0)}</strong>
+    <span class="tech-meter"><i style="width:${100 * item.stronger_signal_projects / maxTechSignal}%"></i></span>
   </div>
 `).join("");
 
@@ -125,6 +126,25 @@ data.projects.forEach((project, index) => {
   ].join(" ").toLowerCase();
 });
 
+const signalCounts = new Map();
+data.projects.filter((project) => project.has_forecast && Number.isFinite(Number(project.prob_operational_2y))).forEach((project) => {
+  const probability = Number(project.prob_operational_2y);
+  signalCounts.set(probability, (signalCounts.get(probability) || 0) + 1);
+});
+const signalPopulation = [...signalCounts.values()].reduce((sum, count) => sum + count, 0);
+const signalScoreByProbability = new Map();
+let signalCursor = 0;
+[...signalCounts.entries()].sort(([a], [b]) => a - b).forEach(([probability, count]) => {
+  const midRank = signalCursor + (count + 1) / 2;
+  signalScoreByProbability.set(probability, Math.round(100 * midRank / signalPopulation));
+  signalCursor += count;
+});
+const signalBand = (score) => score >= 75 ? "Stronger" : score >= 40 ? "Typical" : "Lower";
+data.projects.forEach((project) => {
+  project._delivery_signal_score = signalScoreByProbability.get(Number(project.prob_operational_2y)) ?? null;
+  project._delivery_signal_band = project._delivery_signal_score === null ? "Not available" : signalBand(project._delivery_signal_score);
+});
+
 const populateSelect = (selector, values) => {
   qs(selector).insertAdjacentHTML(
     "beforeend",
@@ -137,7 +157,7 @@ populateSelect("#stage-filter", data.projects.map((project) => project.stage));
 populateSelect("#region-filter", data.projects.map((project) => project.region));
 
 const validCoverage = new Set(["all", "forecast", "unforecast"]);
-const validSort = new Set(["capacity", "probability", "score", "name"]);
+const validSort = new Set(["capacity", "signal", "score", "name"]);
 const applyExplorerStateFromUrl = () => {
   const params = new URLSearchParams(window.location.search);
   qs("#project-search").value = params.get("q") || "";
@@ -224,7 +244,7 @@ function getFilteredProjects() {
   });
   const compareNumber = (key) => (a, b) => (Number(b[key]) || -1) - (Number(a[key]) || -1);
   filtered.sort(
-    sort === "probability" ? compareNumber("prob_operational_3y")
+    sort === "signal" ? compareNumber("_delivery_signal_score")
       : sort === "score" ? compareNumber("screening_score")
         : sort === "name" ? (a, b) => safeValue(a.site_name).localeCompare(safeValue(b.site_name))
           : compareNumber("capacity_mw")
@@ -250,7 +270,7 @@ function renderProjects(resetPage = false) {
       <td>${projectBadge(project)}</td>
       <td class="probability">
         ${project.has_forecast
-          ? `<span class="mini-track"><span style="width:${100 * project.prob_operational_3y}%"></span></span><strong>${formatPercent(project.prob_operational_3y)}</strong>`
+          ? `<span class="mini-track"><span style="width:${project._delivery_signal_score}%"></span></span><strong>${formatNumber(project._delivery_signal_score)}/100</strong><small>${escapeHtml(project._delivery_signal_band)}</small>`
           : `<span class="not-modelled">Planning data only</span>`}
       </td>
       <td><div class="row-actions">
@@ -361,10 +381,11 @@ async function openProject(project, { updateUrl = true } = {}) {
 
   const forecast = project.has_forecast ? `
     <div class="forecast-grid">
-      <div><span>Within 2 years</span><strong>${formatPercent(project.prob_operational_2y)}</strong></div>
-      <div><span>Within 3 years</span><strong>${formatPercent(project.prob_operational_3y)}</strong></div>
-      <div><span>Within 5 years</span><strong>${formatPercent(project.prob_operational_5y)}</strong></div>
+      <div><span>Two-year signal</span><strong>${formatNumber(project._delivery_signal_score)}/100</strong><small>${escapeHtml(project._delivery_signal_band)} relative evidence</small></div>
+      <div><span>Three-year output</span><strong>Research only</strong><small>Not released as a probability</small></div>
+      <div><span>Five-year output</span><strong>Withheld</strong><small>Insufficient validated cohorts</small></div>
     </div>
+    <div class="signal-explainer"><strong>How to read this</strong><p>A score of ${formatNumber(project._delivery_signal_score)} means this project has stronger two-year model evidence than roughly ${formatNumber(project._delivery_signal_score)}% of the current forecast universe. It does not mean a ${formatNumber(project._delivery_signal_score)}% chance of delivery.</p></div>
     <div class="factor-grid">
       <div><h4>Positive evidence</h4>${factorList(project.positive_factors, "No additional positive factors recorded.")}</div>
       <div><h4>Risks and constraints</h4>${factorList(project.risk_factors, "No additional risk factors recorded.")}</div>
@@ -397,14 +418,14 @@ async function openProject(project, { updateUrl = true } = {}) {
       </div>
       ${projectTimeline(project)}
     </div>
-    <div class="dialog-section"><p class="eyebrow">Time-to-operation outlook</p>${forecast}</div>
+    <div class="dialog-section"><p class="eyebrow">Relative delivery evidence</p>${forecast}</div>
     <div class="dialog-actions">
       <button class="primary-button" type="button" data-shortlist-dialog="${project._index}">${shortlist.has(project._index) ? "Remove from shortlist" : "Add to shortlist"}</button>
       <a class="secondary-button" href="${projectPath(project)}">Open permanent page</a>
       <button class="secondary-button" type="button" data-brief-index="${project._index}">Download project brief</button>
       <button class="secondary-button" type="button" data-copy-project-link>Copy project link</button>
     </div>
-    <p class="dialog-disclaimer">Screening scores are transparent heuristics. Forecasts are research estimates based on public data and are not investment advice.</p>
+    <p class="dialog-disclaimer">Screening scores and delivery signals are research prioritisation tools based on public data. They are not literal probabilities or investment advice.</p>
   `;
 }
 
@@ -446,8 +467,10 @@ qs("#export-projects").addEventListener("click", () => {
     ["REPD reference", "ref_id"], ["Project", "site_name"], ["Operator", "operator"],
     ["Technology", "technology"], ["Stage", "stage"], ["Region", "region"],
     ["Capacity MW", "capacity_mw"], ["Screening score", "screening_score"],
-    ["Screening risk", "screening_risk"], ["3-year probability", "prob_operational_3y"],
+    ["Screening risk", "screening_risk"], ["2-year delivery signal", "_delivery_signal_score"],
+    ["Delivery signal band", "_delivery_signal_band"], ["Forecast use", "_forecast_use"],
   ];
+  projectState.filtered.forEach((project) => { project._forecast_use = project.has_forecast ? "Ranking only" : "Planning data only"; });
   const csv = [
     columns.map(([label]) => csvCell(label)).join(","),
     ...projectState.filtered.map((project) => columns.map(([, key]) => csvCell(project[key])).join(",")),
@@ -499,18 +522,18 @@ Under construction: ${formatDate(project.under_construction)}
 Operational: ${formatDate(project.operational)}
 Record updated: ${formatDate(project.record_updated)}
 
-Time-to-operation outlook
--------------------------
-Within 2 years: ${formatPercent(project.prob_operational_2y)}
-Within 3 years: ${formatPercent(project.prob_operational_3y)}
-Within 5 years: ${formatPercent(project.prob_operational_5y)}
+Delivery signal
+---------------
+Two-year relative signal: ${project.has_forecast ? `${formatNumber(project._delivery_signal_score)}/100 (${project._delivery_signal_band})` : "Not available"}
+Three-year public output: ${project.has_forecast ? "Research only" : "Not available"}
+Five-year public output: Withheld
 Public-data coverage: ${safeValue(project.forecast_confidence)}
 Permanent page: ${permanentProjectUrl(project)}
 
 Interpretation
 --------------
-This is an early-stage screening summary based on public project data. Screening
-scores are transparent heuristics and forecasts are research estimates, not
+This is an early-stage screening summary based on public project data. The
+delivery signal is a relative ranking, not a literal chance of delivery or
 investment advice.
 
 Generated by UK Renewable Infrastructure Intelligence.
@@ -562,7 +585,8 @@ qs("#download-shortlist").addEventListener("click", () => {
     ["REPD reference", "ref_id"], ["Project", "site_name"], ["Operator", "operator"],
     ["Technology", "technology"], ["Stage", "stage"], ["Region", "region"],
     ["Capacity MW", "capacity_mw"], ["Screening score", "screening_score"],
-    ["Screening risk", "screening_risk"], ["3-year probability", "prob_operational_3y"],
+    ["Screening risk", "screening_risk"], ["2-year delivery signal", "_delivery_signal_score"],
+    ["Delivery signal band", "_delivery_signal_band"],
   ];
   const selected = [...shortlist].map((index) => data.projects[index]).filter(Boolean);
   const csv = [
@@ -717,7 +741,7 @@ function renderComparison() {
     ["Operator / applicant", safeValue(a.operator), safeValue(b.operator)],
     ["Screening score", `${formatNumber(a.screening_score)}/100`, `${formatNumber(b.screening_score)}/100`],
     ["Risk level", safeValue(a.screening_risk), safeValue(b.screening_risk)],
-    ["Within 3 years", formatPercent(a.prob_operational_3y), formatPercent(b.prob_operational_3y)],
+    ["Two-year delivery signal", a.has_forecast ? `${formatNumber(a._delivery_signal_score)}/100 · ${a._delivery_signal_band}` : "Not available", b.has_forecast ? `${formatNumber(b._delivery_signal_score)}/100 · ${b._delivery_signal_band}` : "Not available"],
   ];
   qs("#compare-content").innerHTML = `
     <div class="table-wrap"><table class="comparison-table"><thead><tr><th>Metric</th><th>${escapeHtml(safeValue(a.site_name))}</th><th>${escapeHtml(safeValue(b.site_name))}</th></tr></thead><tbody>
@@ -764,7 +788,7 @@ async function refreshGrid() {
     gridLoaded = true;
   } catch (error) {
     qs("#grid-metrics").innerHTML = `<div><span>Status</span><strong>Temporarily unavailable</strong></div>`;
-    qs("#grid-period").textContent = "Live grid context could not be loaded. Project screening and forecasts remain available.";
+    qs("#grid-period").textContent = "Live grid context could not be loaded. Project screening and the delivery signal remain available.";
     qs("#generation-chart").innerHTML = "";
     console.warn("Live grid request failed", error);
   } finally {
@@ -883,28 +907,25 @@ const controls = {
   cfd: qs("#cfd-check"),
 };
 const policyShift = { restrictive: -0.34, neutral: 0, supportive: 0.27 };
-const logit = (p) => Math.log(Math.max(.0001, Math.min(.9999, p)) / (1 - Math.max(.0001, Math.min(.9999, p))));
-const sigmoid = (value) => 1 / (1 + Math.exp(-value));
-
 function updateScenario() {
   const rate = Number(controls.rate.value);
   const cost = Number(controls.cost.value);
   const grid = Number(controls.grid.value);
   const shift = (-0.18 * rate) + (-0.025 * cost) + (-0.32 * grid) + policyShift[controls.policy.value] + (controls.cfd.checked ? 0.24 : 0);
-  const scenario = data.portfolio.reduce((sum, row) => sum + row[0] * sigmoid(logit(row[2]) + shift), 0);
-  const reference = data.kpis.expected3yMw;
+  const reference = 100;
+  const scenario = Math.max(25, Math.min(220, reference * Math.exp(shift)));
   const delta = scenario / reference - 1;
   qs("#rate-output").textContent = `${rate >= 0 ? "+" : ""}${rate.toFixed(2)} pp`;
   qs("#cost-output").textContent = `${cost >= 0 ? "+" : ""}${cost.toFixed(0)}%`;
   qs("#grid-output").textContent = `${grid.toFixed(1)} years`;
-  qs("#reference-value").textContent = formatMw(reference, true);
-  qs("#scenario-value").textContent = formatMw(scenario, true);
+  qs("#reference-value").textContent = `${formatNumber(reference)} index`;
+  qs("#scenario-value").textContent = `${formatNumber(scenario)} index`;
   qs("#scenario-delta").textContent = `${delta >= 0 ? "+" : ""}${(100 * delta).toFixed(1)}% vs reference`;
   qs("#scenario-delta").classList.toggle("negative", delta < 0);
   qs("#scenario-bar").style.width = `${Math.min(100, Math.max(3, 100 * scenario / reference))}%`;
   qs("#scenario-note").textContent = Math.abs(shift) > .001
-    ? `Combined assumptions shift portfolio log-odds by ${shift >= 0 ? "+" : ""}${shift.toFixed(2)}. This is a bounded stress test, not a causal forecast.`
-    : "Current-conditions reference scenario.";
+    ? `Combined assumptions imply ${Math.abs(100 * delta).toFixed(1)}% ${delta >= 0 ? "more supportive" : "more restrictive"} delivery conditions than the reference. This is a bounded sensitivity, not a causal forecast.`
+    : "Current-conditions reference set to index 100.";
 }
 
 Object.values(controls).forEach((control) => control.addEventListener("input", updateScenario));
@@ -928,19 +949,13 @@ qs("#panel-rows").textContent = formatNumber(data.kpis.panelRows);
 qs("#linked-projects").textContent = formatNumber(data.kpis.linkedProjects);
 qs("#intervals").textContent = formatNumber(data.kpis.survivalIntervals);
 
-const names = {
-  empirical_survival: "Empirical survival",
-  survival_logistic: "Survival logistic",
-  catboost_survival: "CatBoost AI",
-  historical_base_rate: "Historical base rate",
-};
-qs("#backtest-table").innerHTML = data.model.backtests.map((result) => `
+qs("#backtest-table").innerHTML = Object.entries(data.model.rollingAudit.horizons).map(([horizon, result]) => `
   <tr>
-    <td>${result.horizon} years</td>
-    <td>${escapeHtml(names[result.candidate] || result.candidate)}</td>
-    <td>${result.roc_auc.toFixed(3)}</td>
-    <td>${result.brier_score.toFixed(3)}</td>
-    <td><span class="model-status ${result.selected ? "selected-model" : "rejected-model"}">${result.selected ? "Deployed" : "Challenger"}</span></td>
+    <td>${horizon} years</td>
+    <td>${formatNumber(result.testRows)}</td>
+    <td>${Number(result.rocAuc).toFixed(3)}</td>
+    <td>+${formatPercent(result.rawBrierPenaltyVsBaseRate)} vs base</td>
+    <td><span class="model-status ${result.promotionDecision === "ranking signal only" ? "selected-model" : "rejected-model"}">${escapeHtml(result.promotionDecision)}</span></td>
   </tr>
 `).join("");
 

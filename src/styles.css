@@ -218,6 +218,7 @@ td small { display: block; max-width: 270px; overflow: hidden; color: var(--mute
 .risk-unknown { color: var(--muted); background: var(--soft); }
 .probability { min-width: 124px; }
 .probability > strong { display: inline; font-size: 9px; }
+.probability > small { margin: 4px 0 0 58px; color: var(--muted); font-size: 8px; }
 .mini-track { display: inline-block; width: 48px; height: 5px; margin-right: 6px; background: var(--soft); vertical-align: middle; overflow: hidden; }
 .mini-track span { display: block; height: 100%; background: var(--teal); }
 .not-modelled { color: #85949d; font-size: 8px; }
@@ -419,6 +420,10 @@ dialog::backdrop { background: rgba(6, 21, 30, .62); }
 .forecast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .forecast-grid > div { padding: 14px; border-radius: 5px; background: var(--soft); }
 .forecast-grid strong { font-size: 21px; font-weight: 700; }
+.forecast-grid small { display: block; margin-top: 5px; color: var(--muted); font-size: 8px; line-height: 1.4; }
+.signal-explainer { margin-top: 8px; padding: 13px 14px; border-left: 3px solid var(--teal); background: var(--teal-soft); }
+.signal-explainer strong { color: var(--ink); font-size: 10px; }
+.signal-explainer p { margin: 4px 0 0; color: #4c6870; font-size: 9px; line-height: 1.55; }
 .factor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .factor-grid > div { padding: 14px; border: 1px solid var(--line); border-radius: 5px; }
 .factor-grid ul, .factor-grid p { margin: 8px 0 0; padding-left: 14px; color: var(--muted); font-size: 9px; line-height: 1.55; }

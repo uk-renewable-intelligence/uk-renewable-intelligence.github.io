@@ -2,13 +2,13 @@
 
 [Live dashboard](https://uk-renewable-intelligence.github.io/) · [Modelling workspace](https://uk-renewable-project-screening.streamlit.app/)
 
-A public decision-support dashboard for exploring the UK renewable project pipeline. It combines 13,009 Renewable Energy Planning Database records with transparent time-to-operation forecasts, project screening, geospatial analysis and bounded macroeconomic scenarios.
+A public decision-support dashboard for exploring the UK renewable project pipeline. It combines 13,009 Renewable Energy Planning Database records with an audited relative delivery signal, project screening, geospatial analysis and bounded macroeconomic scenarios.
 
 ## What it does
 
 - Searches and filters the complete 13,009-record public planning snapshot.
 - Maps 12,980 projects with valid coordinates.
-- Links 6,189 active projects to two-, three- and five-year operational forecasts.
+- Links 6,189 active projects to a two-year relative delivery signal.
 - Shows dated planning evidence and shareable URLs for every project and filter view.
 - Generates permanent HTML evidence pages for all 13,009 projects, plus a crawlable directory, XML sitemap and robots file.
 - Supports regional ranking, shortlists, side-by-side comparison, live grid context and an offshore engineering calculator.
@@ -22,8 +22,9 @@ A public decision-support dashboard for exploring the UK renewable project pipel
 - Summary-first loading: the overview payload is about 244 KB; the project index and evidence are loaded only when needed.
 - Integrity tests rebuild all 13,009 records from the published data shards and compare every source field.
 - Search-ready static generation adds unique titles, descriptions, canonical URLs, internal links and schema.org metadata without weakening the interactive dashboard.
-- Forecast challengers are evaluated on temporal holdouts; the simpler survival baseline remains deployed when more complex candidates are less reliable.
-- A rolling-origin calibration audit is saved in `analysis/forecast-audit.json`; the latest challenger did not clear the pre-declared promotion threshold, so production probabilities were not silently changed.
+- Forecast challengers are evaluated on temporal holdouts and each horizon has an independent release gate.
+- A rolling-origin calibration audit is saved in `analysis/forecast-audit.json`; literal probabilities and the five-year output are withheld because no calibrated model clears the declared production threshold.
+- The useful two-year ranking information is published as a percentile signal, with an explicit warning that the score is not a chance of delivery.
 
 ## Data flow
 
@@ -70,7 +71,7 @@ The audit requires the modelling workspace environment because it imports the su
   --output analysis/forecast-audit.json
 ```
 
-The companion notebook summarises the saved result for review. Current evidence supports useful two-year ranking, but not a calibrated production upgrade across all horizons.
+The companion notebook summarises the saved result for review. Current evidence supports useful two-year ranking, but not literal project probabilities; the five-year horizon remains withheld.
 
 ## Publishing
 

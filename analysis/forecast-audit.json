@@ -24,7 +24,7 @@
       "platt_slope": 0.15964919558294316,
       "platt_intercept": -3.867308508355364,
       "brier_skill_vs_base_rate": 0.0010876121708167652,
-      "promotion_decision": "retain published baseline",
+      "promotion_decision": "ranking signal only",
       "uncalibrated": {
         "rows": 4019,
         "events": 63,
@@ -123,7 +123,7 @@
       "platt_slope": 0.014280723544821544,
       "platt_intercept": -3.6501121379141725,
       "brier_skill_vs_base_rate": 7.63746130304499e-05,
-      "promotion_decision": "retain published baseline",
+      "promotion_decision": "research only",
       "uncalibrated": {
         "rows": 4035,
         "events": 77,
@@ -214,7 +214,7 @@
       "platt_slope": -0.5356237860120099,
       "platt_intercept": -3.885604666643357,
       "brier_skill_vs_base_rate": 0.006156731763399481,
-      "promotion_decision": "retain published baseline",
+      "promotion_decision": "withheld",
       "uncalibrated": {
         "rows": 1222,
         "events": 89,
@@ -305,5 +305,5 @@
       "skipped": []
     }
   },
-  "overall_decision": "Retain the published research baseline. The two-year model ranks projects usefully, but no calibration challenger clears the pre-declared promotion threshold across horizons."
+  "overall_decision": "Release the two-year empirical score as a relative ranking signal only. Withhold literal project probabilities and the five-year output until a calibrated model clears the pre-declared release gate."
 }

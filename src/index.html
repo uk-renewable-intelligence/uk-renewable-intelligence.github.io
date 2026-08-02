@@ -4,18 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <meta name="description" content="See which UK renewable projects are most likely to reach operation, with 13,000+ planning records, transparent forecasts and scenario analysis.">
+    <meta name="description" content="Prioritise UK renewable projects with 13,000+ planning records, an audited two-year delivery signal and transparent external-risk scenarios.">
     <meta name="theme-color" content="#102b21">
     <link rel="canonical" href="__ORIGIN__/">
     <meta property="og:title" content="UK Renewable Infrastructure Intelligence">
-    <meta property="og:description" content="Project screening, time-to-operation forecasts and economic scenario analysis for the UK renewable pipeline.">
+    <meta property="og:description" content="Project screening, an audited relative delivery signal and economic scenario analysis for the UK renewable pipeline.">
     <meta property="og:url" content="__ORIGIN__/">
     <meta property="og:image" content="__ORIGIN__/og.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="UK Renewable Infrastructure Intelligence">
-    <meta name="twitter:description" content="13,000+ projects. Transparent forecasts. Decision-ready scenarios.">
+    <meta name="twitter:description" content="13,000+ projects. Audited delivery evidence. Transparent scenarios.">
     <meta name="twitter:image" content="__ORIGIN__/og.png">
     <title>UK Renewable Infrastructure Intelligence</title>
     <script type="application/ld+json">__STRUCTURED_DATA__</script>
@@ -41,7 +41,7 @@
           <a href="./forecasting/">Forecasting</a>
           <a href="./about/">About</a>
         </nav>
-        <span class="status-pill"><span></span>Public beta · Model v2.0</span>
+        <span class="status-pill"><span></span>Public beta · Forecast v2.1</span>
       </div>
     </header>
 
@@ -61,7 +61,7 @@
         <div class="hero-copy">
           <p class="eyebrow">UK Renewable Intelligence · Data snapshot <span id="snapshot-date"></span></p>
           <h1>UK Renewable Infrastructure Intelligence</h1>
-          <p class="hero-lede">Assess which UK renewable projects are most likely to reach operation. Search 13,000+ planning records, compare delivery risk and inspect probability-weighted capacity forecasts.</p>
+          <p class="hero-lede">Prioritise UK renewable projects using 13,000+ planning records, a validated two-year delivery ranking and transparent external-risk scenarios.</p>
           <div class="hero-actions">
             <a class="primary-button" href="#projects">Open Project Explorer</a>
             <a class="secondary-button" href="./forecasting/">Review Forecast Evidence</a>
@@ -75,22 +75,22 @@
         <aside class="hero-panel">
           <div class="hero-panel-top">
             <span class="live-dot"></span>
-            <span>Portfolio forecast · Three-year horizon</span>
+            <span>Audited forecast release · Two-year horizon</span>
           </div>
           <p class="big-number" id="hero-expected">Loading…</p>
-          <p class="big-number-label">risk-adjusted capacity expected within three years</p>
+          <p class="big-number-label">ranking discrimination on rolling, fully observed test cohorts</p>
           <div class="hero-panel-metrics">
-            <div><span>Active pipeline</span><strong id="hero-active">—</strong></div>
-            <div><span>Source updated</span><strong id="hero-updated">—</strong></div>
+            <div><span>Public output</span><strong id="hero-active">—</strong></div>
+            <div><span>Test cohorts</span><strong id="hero-updated">—</strong></div>
           </div>
-          <p class="fine-print">Forecasts use a transparent survival baseline selected through temporal back-testing. Research only.</p>
+          <p class="fine-print">Exact probability release is withheld. The public score is a relative research signal, not a chance of delivery.</p>
         </aside>
       </section>
 
       <section class="notice" aria-label="Model notice">
         <span class="notice-icon" aria-hidden="true">i</span>
-        <div><strong>Model governance active.</strong><span>Forecast candidates are tested on temporal holdouts; unreliable challengers are rejected automatically.</span></div>
-        <a href="./forecasting/">Review validation</a>
+        <div><strong>Probability release withheld.</strong><span>The two-year model is useful for ranking, but its percentages fail the declared calibration gate.</span></div>
+        <a href="./forecasting/">Review release evidence</a>
       </section>
 
       <section class="platform-overview" aria-labelledby="platform-overview-title">
@@ -113,9 +113,9 @@
           </a>
           <a class="module-card" href="./forecasting/">
             <span class="module-number">03</span>
-            <h3>Delivery Forecasting</h3>
-            <p>Review two-, three- and five-year estimates with validation evidence.</p>
-            <strong>Forecast Research <span aria-hidden="true">→</span></strong>
+            <h3>Delivery Signal</h3>
+            <p>Rank projects with the validated two-year signal and inspect every release gate.</p>
+            <strong>Forecast Evidence <span aria-hidden="true">→</span></strong>
           </a>
           <a class="module-card" href="#scenario">
             <span class="module-number">04</span>
@@ -130,7 +130,7 @@
         <article class="metric"><span>REPD records</span><strong id="kpi-records">—</strong><small>Complete explorer dataset</small></article>
         <article class="metric"><span>Forecast universe</span><strong id="kpi-projects">—</strong><small>Active pipeline projects</small></article>
         <article class="metric"><span>Pipeline capacity</span><strong id="kpi-capacity">—</strong><small>Publicly reported MW</small></article>
-        <article class="metric accent-metric"><span>Three-year expected</span><strong id="kpi-expected">—</strong><small>Capacity × probability</small></article>
+        <article class="metric accent-metric"><span>Stronger-signal projects</span><strong id="kpi-expected">—</strong><small>Top relative two-year evidence band</small></article>
       </section>
 
       <section class="dashboard-grid">
@@ -143,7 +143,7 @@
         </article>
         <article class="panel span-5">
           <div class="section-heading">
-            <div><p class="eyebrow">Technology outlook</p><h2>Three-Year Technology Outlook</h2></div>
+            <div><p class="eyebrow">Technology outlook</p><h2>Stronger-Signal Projects by Technology</h2></div>
           </div>
           <div class="tech-list" id="tech-chart"><p class="loading-label">Loading technology data…</p></div>
         </article>
@@ -189,7 +189,7 @@
                 <span class="sr-only">Sort projects</span>
                 <select id="project-sort">
                   <option value="capacity">Largest capacity</option>
-                  <option value="probability">Highest 3-year probability</option>
+                  <option value="signal">Strongest 2-year delivery signal</option>
                   <option value="score">Highest screening score</option>
                   <option value="name">Project name A–Z</option>
                 </select>
@@ -200,7 +200,7 @@
           </div>
           <div class="table-wrap project-table-wrap">
             <table>
-              <thead><tr><th>Project</th><th>Technology</th><th>Stage</th><th>Capacity</th><th>Screening</th><th>Within 3 years</th><th><span class="sr-only">Details</span></th></tr></thead>
+              <thead><tr><th>Project</th><th>Technology</th><th>Stage</th><th>Capacity</th><th>Screening</th><th>2-year delivery signal</th><th><span class="sr-only">Details</span></th></tr></thead>
               <tbody id="project-table"><tr><td class="empty-state" colspan="7"><strong>Loading project register…</strong><span>Preparing 13,009 records.</span></td></tr></tbody>
             </table>
           </div>
@@ -317,7 +317,7 @@
       <section class="section-block scenario-section" id="scenario">
         <div class="section-intro">
           <div><p class="eyebrow">Scenario lab</p><h2>External-Risk Scenario Analysis</h2></div>
-          <p>Adjust external conditions to stress-test the published forecast. Effects are bounded assumptions, deliberately separated from the trained model.</p>
+          <p>Adjust external conditions to stress-test portfolio delivery pressure. Effects are bounded assumptions, deliberately separated from the trained ranking signal.</p>
         </div>
         <div class="scenario-grid">
           <aside class="control-panel">
@@ -344,7 +344,7 @@
             <button id="reset-scenario" class="secondary-button button-reset" type="button">Reset scenario</button>
           </aside>
           <article class="scenario-result">
-            <div class="scenario-result-head"><p class="eyebrow">Three-year portfolio estimate</p><span>Live stress test</span></div>
+            <div class="scenario-result-head"><p class="eyebrow">Portfolio delivery-conditions index</p><span>Live stress test</span></div>
             <div class="scenario-values">
               <div><span>Reference</span><strong id="reference-value"></strong></div>
               <div class="arrow" aria-hidden="true">→</div>
@@ -365,9 +365,9 @@
         </div>
         <div class="trust-grid">
           <article class="panel trust-summary">
-            <span class="research-badge">Research-only forecast</span>
-            <h3>Production Forecast Baseline</h3>
-            <p>CatBoost remains a diagnostic challenger. It was rejected because its temporal-holdout Brier score did not improve reliability consistently.</p>
+            <span class="research-badge">Horizon gates active</span>
+            <h3>Forecast Release Status</h3>
+            <p>The two-year empirical score is released for relative ranking only. Literal probabilities and the five-year output are withheld until they beat the declared benchmark.</p>
             <div class="trust-stats">
               <div><strong id="panel-rows"></strong><span>panel rows</span></div>
               <div><strong id="linked-projects"></strong><span>linked histories</span></div>
@@ -375,8 +375,8 @@
             </div>
           </article>
           <article class="panel">
-            <div class="section-heading"><div><p class="eyebrow">Temporal holdout</p><h3>Model Candidate Comparison</h3></div><span class="subtle">Lower Brier is better</span></div>
-            <div class="table-wrap compact"><table><thead><tr><th>Horizon</th><th>Model</th><th>ROC-AUC</th><th>Brier</th><th>Status</th></tr></thead><tbody id="backtest-table"></tbody></table></div>
+            <div class="section-heading"><div><p class="eyebrow">Rolling-origin audit</p><h3>Horizon Release Matrix</h3></div><span class="subtle">AUC: 0.5 random · 1.0 perfect</span></div>
+            <div class="table-wrap compact"><table><thead><tr><th>Horizon</th><th>Test rows</th><th>ROC-AUC</th><th>Probability error</th><th>Public output</th></tr></thead><tbody id="backtest-table"></tbody></table></div>
           </article>
         </div>
         <div class="quality-grid" id="quality-grid"></div>
@@ -418,7 +418,7 @@
           <a href="https://uk-renewable-project-screening.streamlit.app/" target="_blank" rel="noreferrer">Modelling Workspace ↗</a>
         </nav>
       </div>
-      <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Model v2.0 · Research only · Not investment advice</span></div>
+      <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Forecast v2.1 · Ranking signal only · Not investment advice</span></div>
     </footer>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
