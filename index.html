@@ -1,0 +1,1584 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <meta name="description" content="Explore 13,000+ UK renewable projects, transparent time-to-operation forecasts and economic scenarios.">
+    <meta name="theme-color" content="#102b21">
+    <link rel="canonical" href="https://uk-renewable-intelligence.github.io/">
+    <meta property="og:title" content="UK Renewable Infrastructure Intelligence">
+    <meta property="og:description" content="Project screening, time-to-operation forecasts and economic scenario analysis for the UK renewable pipeline.">
+    <meta property="og:url" content="https://uk-renewable-intelligence.github.io/">
+    <meta property="og:image" content="https://uk-renewable-intelligence.github.io/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="UK Renewable Infrastructure Intelligence">
+    <meta name="twitter:description" content="13,000+ projects. Transparent forecasts. Decision-ready scenarios.">
+    <meta name="twitter:image" content="https://uk-renewable-intelligence.github.io/og.png">
+    <title>UK Renewable Infrastructure Intelligence</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    >
+    <style>:root {
+  --ink: #14212b;
+  --muted: #647482;
+  --canvas: #f3f6f8;
+  --surface: #ffffff;
+  --navy: #102633;
+  --navy-2: #183846;
+  --teal: #087b72;
+  --teal-2: #0c9185;
+  --teal-soft: #e5f3f1;
+  --blue: #2e6f9e;
+  --amber: #b97816;
+  --red: #a44d42;
+  --line: #d9e2e8;
+  --line-strong: #c7d2da;
+  --soft: #eef3f6;
+  --radius: 10px;
+  --shadow: 0 3px 12px rgba(18, 42, 55, .055);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+button, input, select { font: inherit; }
+:focus-visible { outline: 3px solid rgba(8, 123, 114, .22); outline-offset: 2px; }
+.skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; transform: translateY(-150%); padding: 9px 12px; background: white; }
+.skip-link:focus { transform: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+.topbar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 62px;
+  padding: 0 2.5vw;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  background: var(--navy);
+  color: white;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 720; text-decoration: none; }
+.brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; background: rgba(255,255,255,.08); font-size: 11px; letter-spacing: .08em; }
+.topbar nav { display: flex; align-self: stretch; }
+.topbar nav a { display: flex; align-items: center; border-bottom: 3px solid transparent; padding: 3px 16px 0; color: #b9c9d1; font-size: 12px; font-weight: 650; text-decoration: none; }
+.topbar nav a:hover, .topbar nav a.active { border-bottom-color: #54c4b7; color: white; background: rgba(255,255,255,.04); }
+.status-pill { justify-self: end; display: flex; align-items: center; gap: 8px; color: #c3d1d7; font-size: 11px; }
+.status-pill span, .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ac6a5; box-shadow: 0 0 0 3px rgba(74,198,165,.12); }
+
+main { width: min(1560px, 95vw); margin: 0 auto; }
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 22px;
+  align-items: stretch;
+  padding: 30px 0 18px;
+}
+.hero-copy, .hero-panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.hero-copy { padding: 28px 30px; }
+.eyebrow { margin: 0 0 8px; color: var(--teal); font-size: 10px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+h1, h2, h3, h4 { margin: 0; color: var(--ink); font-family: inherit; }
+h1 { max-width: 800px; font-size: clamp(31px, 3.2vw, 45px); font-weight: 720; letter-spacing: -.035em; line-height: 1.08; }
+h2 { font-size: clamp(23px, 2.2vw, 31px); font-weight: 700; letter-spacing: -.025em; }
+h3 { font-size: 20px; font-weight: 700; }
+h4 { font-size: 13px; font-weight: 760; }
+.hero-lede { max-width: 820px; margin: 14px 0 0; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+.primary-button, .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid var(--teal);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 720;
+  text-decoration: none;
+}
+.primary-button { background: var(--teal); color: white; }
+.primary-button:hover { background: #066c64; }
+.secondary-button { background: white; color: var(--teal); }
+.secondary-button:hover { background: var(--teal-soft); }
+.hero-proof { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; font-weight: 650; }
+.hero-proof span::before { content: "●"; margin-right: 7px; color: var(--teal-2); font-size: 7px; vertical-align: 1px; }
+.hero-panel { display: flex; flex-direction: column; padding: 24px; color: white; border-color: var(--navy); background: linear-gradient(145deg, var(--navy-2), var(--navy)); }
+.hero-panel-top { display: flex; align-items: center; gap: 9px; color: #c1d0d6; font-size: 10px; font-weight: 720; text-transform: uppercase; letter-spacing: .06em; }
+.loading-label { margin: 24px 0; color: #84949e; font-size: 10px; }
+.loading .big-number, .loading .metric strong { color: #aab7be; }
+.big-number { margin: auto 0 2px; font-size: clamp(44px, 4vw, 58px); font-weight: 700; letter-spacing: -.05em; }
+.big-number-label { max-width: 290px; margin: 0; color: #b9cbd2; font-size: 12px; line-height: 1.45; }
+.confidence-row { display: flex; justify-content: space-between; margin-top: 22px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); font-size: 11px; }
+.confidence-row span { color: #aebfc7; }
+.fine-print { margin: 13px 0 0; color: #91a7b0; font-size: 9px; line-height: 1.5; }
+
+.notice { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 11px 14px; border: 1px solid #d7e3e6; border-radius: 7px; background: #edf5f6; color: #365663; }
+.notice-icon { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 4px; background: #d7e9ea; color: var(--teal); font-size: 11px; font-weight: 800; }
+.notice strong, .notice div span { display: inline; font-size: 11px; }
+.notice div span { margin-left: 7px; color: #5c737c; }
+.notice a { color: var(--teal); font-size: 10px; font-weight: 750; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0 10px; }
+.metric, .panel { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); }
+.metric { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr; min-height: 106px; padding: 17px 18px; border-radius: var(--radius); }
+.metric > span { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.metric strong { grid-column: 1; align-self: end; margin-top: 16px; font-size: 28px; font-weight: 710; letter-spacing: -.035em; }
+.metric small { grid-row: 1 / 3; grid-column: 2; align-self: end; max-width: 105px; color: #8797a2; font-size: 9px; text-align: right; }
+.accent-metric { color: var(--ink); border-top: 3px solid var(--teal); padding-top: 15px; }
+.accent-metric > span, .accent-metric small { color: var(--muted); }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; }
+.panel { border-radius: var(--radius); padding: 20px; }
+.span-7 { grid-column: span 7; }
+.span-5 { grid-column: span 5; }
+.section-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
+.panel h2 { font-size: 18px; }
+.subtle { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .05em; }
+.bar-list, .tech-list { display: grid; gap: 13px; }
+.bar-item-header { display: flex; justify-content: space-between; gap: 14px; margin-bottom: 5px; color: #536672; font-size: 10px; }
+.bar-item-header strong { color: var(--ink); font-size: 10px; }
+.bar-track { height: 7px; overflow: hidden; border-radius: 2px; background: var(--soft); }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), #5cb7af); }
+.tech-item { display: grid; grid-template-columns: 1fr auto; gap: 3px 14px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.tech-item:last-child { padding-bottom: 0; border: 0; }
+.tech-item > span:first-child { color: #52646f; font-size: 10px; }
+.tech-item small { color: #8a99a2; font-size: 9px; }
+.tech-item strong { grid-row: span 2; grid-column: 2; font-size: 11px; }
+.tech-meter { grid-column: 1 / -1; height: 2px; margin-top: 3px; background: var(--soft); }
+.tech-meter i { display: block; height: 100%; background: var(--blue); }
+
+.section-block { padding: 58px 0 0; scroll-margin-top: 68px; }
+.section-intro { display: grid; grid-template-columns: 1fr .8fr; gap: 7vw; align-items: end; margin-bottom: 17px; }
+.section-intro > p { max-width: 620px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.section-intro > p strong { color: var(--ink); }
+.coverage-strip { display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.coverage-strip > div { display: grid; grid-template-columns: 1fr auto; padding: 12px 16px; border-right: 1px solid var(--line); }
+.coverage-strip > div:last-child { border-right: 0; }
+.coverage-strip span { color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.coverage-strip strong { grid-row: 1 / 3; grid-column: 2; align-self: center; font-size: 18px; }
+.coverage-strip small { margin-top: 3px; color: #8b99a2; font-size: 9px; }
+.project-panel { padding: 14px; }
+.project-tools { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 8px; padding-bottom: 12px; }
+.project-tools label, .control > label { display: grid; gap: 5px; color: var(--muted); font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .035em; }
+input[type="search"], select { width: 100%; height: 38px; border: 1px solid var(--line-strong); border-radius: 5px; padding: 0 10px; background: white; color: var(--ink); outline: 0; font-size: 11px; }
+input[type="search"]:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 2px rgba(8,123,114,.09); }
+.project-subtools { display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.filter-chip, .text-button, .pagination button, .row-action { border: 0; cursor: pointer; }
+.filter-chip { min-height: 29px; padding: 0 10px; border-radius: 4px; background: var(--soft); color: var(--muted); font-size: 9px; font-weight: 720; }
+.filter-chip.active { background: var(--navy); color: white; }
+.sort-and-export { display: flex; gap: 7px; align-items: center; }
+.sort-and-export select { height: 32px; min-width: 205px; font-size: 10px; }
+.text-button { min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--teal); font-size: 9px; font-weight: 780; }
+.text-button:hover { background: var(--teal-soft); }
+.table-wrap { overflow: auto; }
+.project-table-wrap { max-height: 690px; border: 1px solid var(--line); border-radius: 6px; scroll-margin-top: 75px; }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 9px 10px; color: #627581; font-size: 8px; text-align: left; text-transform: uppercase; letter-spacing: .07em; }
+.project-table-wrap th { position: sticky; z-index: 2; top: 0; background: #edf2f5; box-shadow: inset 0 -1px var(--line-strong); }
+td { padding: 11px 10px; border-top: 1px solid #e4eaee; font-size: 10px; vertical-align: middle; }
+tbody tr:hover { background: #f5f9fa; }
+td strong { display: block; margin-bottom: 2px; }
+td small { display: block; max-width: 270px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.numeric { white-space: nowrap; }
+.stage-label { display: inline-flex; max-width: 170px; border: 1px solid #d5e0e5; border-radius: 3px; padding: 4px 6px; background: #f3f6f7; color: #4f626e; font-size: 8px; font-weight: 700; }
+.risk-badge { display: inline-flex; white-space: nowrap; border-radius: 3px; padding: 4px 6px; font-size: 8px; font-weight: 760; }
+.risk-low { color: #08685f; background: #e1f3ef; }
+.risk-medium { color: #8a5b10; background: #f8edd8; }
+.risk-high { color: #923e35; background: #f7e5e2; }
+.risk-unknown { color: var(--muted); background: var(--soft); }
+.probability { min-width: 124px; }
+.probability > strong { display: inline; font-size: 9px; }
+.mini-track { display: inline-block; width: 48px; height: 5px; margin-right: 6px; background: var(--soft); vertical-align: middle; overflow: hidden; }
+.mini-track span { display: block; height: 100%; background: var(--teal); }
+.not-modelled { color: #85949d; font-size: 8px; }
+.row-action { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 4px; background: var(--soft); color: var(--teal); }
+.row-action:hover { color: white; background: var(--teal); }
+.empty-state { padding: 44px !important; text-align: center; }
+.empty-state strong, .empty-state span { display: block; }
+.empty-state span { margin-top: 5px; color: var(--muted); }
+.table-footer { display: flex; justify-content: space-between; align-items: center; min-height: 42px; padding-top: 8px; color: var(--muted); font-size: 9px; }
+.pagination { display: flex; align-items: center; gap: 8px; }
+.pagination button { width: 29px; height: 29px; border-radius: 4px; background: var(--soft); color: var(--navy); }
+.pagination button:disabled { cursor: default; opacity: .35; }
+
+.tool-tabs {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  margin-bottom: 9px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  box-shadow: var(--shadow);
+}
+.tool-tab {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 740;
+}
+.tool-tab:hover { color: var(--ink); background: var(--soft); }
+.tool-tab.active { color: white; background: var(--navy); }
+.tool-tab span { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 4px; border-radius: 9px; background: rgba(255,255,255,.16); font-size: 8px; }
+.tool-panel { min-height: 270px; padding: 18px; }
+.tool-panel[hidden] { display: none; }
+.tool-panel-heading { display: flex; justify-content: space-between; gap: 18px; align-items: end; margin-bottom: 14px; }
+.tool-panel-heading h3 { font-size: 19px; }
+.inline-tools, .inline-actions, .compare-selectors { display: flex; gap: 7px; align-items: end; }
+.inline-tools label, .answer-control, .wide-select, .compare-selectors label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.inline-tools select { min-width: 185px; height: 32px; }
+.answer-control select { min-width: 225px; }
+.wide-select select { min-width: min(360px, 40vw); }
+.map-summary { min-height: 24px; color: var(--muted); font-size: 10px; }
+#project-map {
+  z-index: 1;
+  width: 100%;
+  height: min(640px, 68vh);
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #e8eef1;
+}
+.leaflet-container { font-family: inherit; }
+.leaflet-popup-content { margin: 12px 14px; font-size: 10px; line-height: 1.45; }
+.leaflet-popup-content strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.map-dot { border: 2px solid white; border-radius: 50%; box-shadow: 0 1px 5px rgba(14,37,49,.3); }
+.map-dot.low { background: #087b72; }
+.map-dot.medium { background: #b97816; }
+.map-dot.high { background: #a44d42; }
+.panel-footnote { margin: 11px 0 0; color: #7d8d97; font-size: 9px; line-height: 1.5; }
+.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mini-metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.mini-metric-grid.four { grid-template-columns: repeat(4, 1fr); }
+.mini-metric-grid > div {
+  min-height: 76px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--soft);
+}
+.mini-metric-grid span { display: block; color: var(--muted); font-size: 8px; font-weight: 720; text-transform: uppercase; letter-spacing: .05em; }
+.mini-metric-grid strong { display: block; margin-top: 11px; font-size: 19px; }
+.shortlist-action { display: inline-grid; place-items: center; width: 27px; height: 27px; border: 0; border-radius: 4px; cursor: pointer; background: var(--soft); color: var(--teal); font-weight: 800; }
+.shortlist-action.active { color: white; background: var(--teal); }
+.dialog-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 20px; }
+.dialog-actions button { cursor: pointer; }
+.table-link { max-width: 240px; padding: 0; overflow: hidden; border: 0; cursor: pointer; background: transparent; color: var(--teal); font-size: 10px; font-weight: 750; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.primary-button:disabled, .text-button:disabled { cursor: default; opacity: .45; }
+.row-actions { display: flex; gap: 4px; }
+.compare-selectors { display: grid; grid-template-columns: 1fr 1fr; margin: 0 0 14px; }
+.comparison-table th:not(:first-child), .comparison-table td:not(:first-child) { width: 36%; }
+.comparison-meter { height: 6px; margin-top: 6px; overflow: hidden; background: var(--soft); }
+.comparison-meter span { display: block; height: 100%; background: var(--teal); }
+.generation-chart { display: grid; gap: 9px; max-width: 940px; margin-top: 15px; }
+.generation-row { display: grid; grid-template-columns: 90px 1fr 45px; gap: 9px; align-items: center; color: var(--muted); font-size: 9px; }
+.generation-bar { height: 8px; overflow: hidden; border-radius: 2px; background: var(--soft); }
+.generation-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--teal), #55b7ae); }
+.calculator-grid { display: grid; grid-template-columns: 390px 1fr; gap: 12px; }
+.calculator-grid .control-panel { grid-template-columns: 1fr 1fr; gap: 16px; padding: 18px; box-shadow: none; }
+.calculator-project { display: flex; justify-content: space-between; gap: 20px; min-height: 61px; padding: 12px 14px; border-radius: 6px; background: var(--navy); color: white; }
+.calculator-project span { color: #aebfc7; font-size: 8px; text-transform: uppercase; }
+.calculator-project strong { display: block; margin-top: 5px; color: white; font-size: 15px; }
+.calculator-project div:last-child { text-align: right; }
+.result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 8px; }
+.result-grid > div { min-height: 80px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: white; }
+.result-grid span { color: var(--muted); font-size: 8px; text-transform: uppercase; }
+.result-grid strong { display: block; margin-top: 11px; font-size: 17px; }
+
+.scenario-grid { display: grid; grid-template-columns: 380px 1fr; gap: 10px; }
+.control-panel, .scenario-result { border-radius: var(--radius); padding: 21px; }
+.control-panel { display: grid; gap: 20px; border: 1px solid var(--line); background: white; box-shadow: var(--shadow); }
+.control > div:first-child { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+.control label { font-size: 10px; font-weight: 720; }
+.control output { color: var(--teal); font-size: 10px; font-weight: 800; }
+input[type="range"] { width: 100%; accent-color: var(--teal); }
+.range-labels { display: flex; justify-content: space-between; margin-top: 3px; color: #8c9aa3; font-size: 8px; }
+.check-control { display: flex; gap: 8px; align-items: center; color: var(--ink); font-size: 10px; font-weight: 700; }
+.check-control input { accent-color: var(--teal); }
+.button-reset { width: 100%; cursor: pointer; background: white; }
+.scenario-result { color: white; background: var(--navy); box-shadow: var(--shadow); }
+.scenario-result .eyebrow { color: #60c8bb; }
+.scenario-result-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.scenario-result-head > span { border: 1px solid rgba(255,255,255,.15); border-radius: 4px; padding: 5px 7px; color: #b4c4cb; font-size: 8px; text-transform: uppercase; }
+.scenario-values { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: center; margin-top: 45px; }
+.scenario-values div:not(.arrow) { display: grid; gap: 5px; }
+.scenario-values span { color: #aebfc7; font-size: 10px; text-transform: uppercase; }
+.scenario-values strong { color: white; font-size: clamp(35px, 4vw, 54px); font-weight: 680; letter-spacing: -.04em; }
+.arrow { color: #5cc6b8; font-size: 21px; }
+.delta-chip { display: inline-block; margin-top: 20px; border-radius: 4px; padding: 6px 9px; background: rgba(77,196,177,.14); color: #7ddace; font-size: 10px; font-weight: 800; }
+.delta-chip.negative { color: #ffc5ad; background: rgba(255,153,105,.13); }
+.comparison-track { position: relative; height: 9px; margin: 35px 0 16px; background: rgba(255,255,255,.1); }
+.comparison-track span { position: absolute; inset: 0 auto 0 0; }
+#reference-bar { width: 100%; background: rgba(255,255,255,.2); }
+#scenario-bar { top: 3px; width: 100%; height: 3px; background: #65d0c3; transition: width .25s ease; }
+.scenario-note { min-height: 38px; color: #b6c7cd; font-size: 10px; line-height: 1.5; }
+.macro-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 26px; }
+.macro-card { padding-top: 11px; border-top: 1px solid rgba(255,255,255,.13); }
+.macro-card strong, .macro-card span, .macro-card small { display: block; }
+.macro-card strong { color: white; font-size: 16px; }
+.macro-card span { margin-top: 2px; color: #9eb2ba; font-size: 8px; text-transform: uppercase; }
+.macro-card small { margin-top: 4px; color: #78909a; font-size: 8px; }
+
+.trust-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 10px; }
+.trust-summary { color: white; border-color: var(--navy); background: var(--navy); }
+.trust-summary h3 { color: white; }
+.research-badge { display: inline-block; margin-bottom: 20px; border-radius: 3px; padding: 5px 7px; background: rgba(77,196,177,.14); color: #7ddace; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.trust-summary p { color: #b6c7cd; font-size: 11px; line-height: 1.55; }
+.trust-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 27px; padding-top: 17px; border-top: 1px solid rgba(255,255,255,.14); }
+.trust-stats strong { display: block; color: white; font-size: 18px; }
+.trust-stats span { color: #9fb2bb; font-size: 8px; text-transform: uppercase; }
+.compact { max-height: 380px; }
+.compact td { padding-top: 7px; padding-bottom: 7px; }
+.model-status { display: inline-flex; border-radius: 3px; padding: 4px 6px; font-size: 8px; font-weight: 800; }
+.selected-model { color: #08685f; background: #e1f3ef; }
+.rejected-model { color: var(--muted); background: var(--soft); }
+.quality-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+.quality-card { position: relative; min-height: 132px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: var(--shadow); }
+.quality-card span { color: var(--muted); font-size: 9px; text-transform: uppercase; }
+.quality-card strong { display: block; margin: 12px 0 5px; font-size: 18px; }
+.quality-card p { max-width: 92%; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.quality-card i { position: absolute; top: 17px; right: 17px; width: 7px; height: 7px; border-radius: 50%; }
+.quality-card i.good { background: #35a98e; }
+.quality-card i.watch { background: #d4932c; }
+.methodology-footer { display: grid; grid-template-columns: 1.2fr .8fr; gap: 8vw; margin-top: 10px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: white; box-shadow: var(--shadow); }
+.methodology-footer ul { display: grid; gap: 5px; margin: 0; padding-left: 16px; color: var(--muted); font-size: 9px; line-height: 1.45; }
+.methodology-footer p:last-child { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+
+dialog { width: min(760px, calc(100vw - 28px)); max-height: min(88vh, 900px); padding: 0; overflow: auto; border: 0; border-radius: 10px; background: white; box-shadow: 0 25px 80px rgba(8, 27, 38, .35); }
+dialog::backdrop { background: rgba(6, 21, 30, .62); }
+.dialog-close { position: sticky; z-index: 3; float: right; top: 12px; right: 12px; display: grid; place-items: center; width: 32px; height: 32px; margin: 12px 12px -44px 0; border: 1px solid var(--line); border-radius: 5px; cursor: pointer; background: white; color: var(--ink); font-size: 18px; }
+#project-dialog-content { padding: 32px; }
+#project-dialog-content h2 { max-width: 620px; font-size: clamp(27px, 4vw, 37px); }
+.dialog-lede { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+.dialog-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 17px; }
+.project-facts { display: grid; grid-template-columns: repeat(2, 1fr); margin-top: 20px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.project-facts > div { min-height: 66px; padding: 12px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.project-facts > div:nth-child(2n) { border-right: 0; }
+.project-facts > div:nth-last-child(-n+2) { border-bottom: 0; }
+.project-facts span, .forecast-grid span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .05em; }
+.project-facts strong { font-size: 10px; line-height: 1.4; }
+.dialog-section { margin-top: 23px; }
+.forecast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.forecast-grid > div { padding: 14px; border-radius: 5px; background: var(--soft); }
+.forecast-grid strong { font-size: 21px; font-weight: 700; }
+.factor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.factor-grid > div { padding: 14px; border: 1px solid var(--line); border-radius: 5px; }
+.factor-grid ul, .factor-grid p { margin: 8px 0 0; padding-left: 14px; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.factor-grid p { padding-left: 0; }
+.forecast-unavailable { padding: 16px; border-radius: 5px; background: #f8f2e6; }
+.forecast-unavailable p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.dialog-disclaimer { margin: 18px 0 0; color: #8a99a2; font-size: 8px; line-height: 1.5; }
+
+footer { display: flex; justify-content: space-between; gap: 25px; width: min(1560px, 95vw); margin: 58px auto 0; padding: 26px 0 34px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; }
+footer strong { color: var(--ink); }
+footer p { margin: 5px 0 0; }
+.footer-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 15px; max-width: 620px; text-align: right; }
+.footer-links a { color: var(--teal); font-weight: 720; text-decoration: none; }
+.footer-links span { flex-basis: 100%; }
+
+@media (max-width: 1050px) {
+  .topbar { grid-template-columns: 1fr auto; }
+  .status-pill { display: none; }
+  .hero { grid-template-columns: 1fr 340px; }
+  .project-tools { grid-template-columns: 1.5fr 1fr; }
+}
+@media (max-width: 800px) {
+  .topbar nav { overflow-x: auto; }
+  .hero { grid-template-columns: 1fr; }
+  .hero-panel { min-height: 260px; }
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .span-7, .span-5 { grid-column: span 12; }
+  .section-intro, .scenario-grid, .trust-grid, .methodology-footer, .analysis-grid, .calculator-grid { grid-template-columns: 1fr; }
+  .section-intro { gap: 10px; }
+  .project-subtools { align-items: flex-start; flex-direction: column; }
+  .sort-and-export { width: 100%; justify-content: space-between; }
+  .tool-panel-heading { align-items: flex-start; flex-direction: column; }
+  .calculator-grid .control-panel { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 590px) {
+  main, footer { width: min(94vw, 560px); }
+  .topbar { display: flex; justify-content: space-between; padding: 0 3vw; }
+  .brand > span:last-child { display: none; }
+  .topbar nav a { padding: 3px 9px 0; font-size: 10px; white-space: nowrap; }
+  h1 { font-size: 31px; }
+  .hero-copy { padding: 22px; }
+  .hero-actions { align-items: stretch; flex-direction: column; }
+  .metric-grid, .coverage-strip { grid-template-columns: 1fr; }
+  .coverage-strip > div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .coverage-strip > div:last-child { border-bottom: 0; }
+  .project-tools { grid-template-columns: 1fr; }
+  .sort-and-export { align-items: stretch; flex-direction: column; }
+  .sort-and-export select { width: 100%; }
+  .project-table-wrap th:nth-child(2), .project-table-wrap td:nth-child(2),
+  .project-table-wrap th:nth-child(5), .project-table-wrap td:nth-child(5) { display: none; }
+  .scenario-values { grid-template-columns: 1fr; margin-top: 30px; }
+  .arrow { transform: rotate(90deg); }
+  .mini-metric-grid, .mini-metric-grid.four, .result-grid, .compare-selectors { grid-template-columns: 1fr; }
+  .calculator-grid .control-panel { grid-template-columns: 1fr; }
+  .inline-tools { width: 100%; align-items: stretch; flex-direction: column; }
+  .inline-tools select, .answer-control select, .wide-select select { width: 100%; min-width: 0; }
+  #project-map { min-height: 390px; }
+  .macro-row, .quality-grid, .project-facts, .forecast-grid, .factor-grid { grid-template-columns: 1fr; }
+  .project-facts > div { border-right: 0; border-bottom: 1px solid var(--line) !important; }
+  .project-facts > div:last-child { border-bottom: 0 !important; }
+  .trust-stats { grid-template-columns: 1fr 1fr; }
+  #project-dialog-content { padding: 28px 18px 22px; }
+  footer { flex-direction: column; }
+  .footer-links { justify-content: flex-start; text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+  </head>
+  <body class="loading">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="topbar">
+      <a class="brand" href="#overview" aria-label="UK Renewable Infrastructure Intelligence home">
+        <span class="brand-mark">UK</span>
+        <span>Renewable Intelligence</span>
+      </a>
+      <nav aria-label="Dashboard sections">
+        <a href="#overview">Overview</a>
+        <a href="#projects">Explorer</a>
+        <a href="#workbench">Map &amp; tools</a>
+        <a href="#scenario">Scenario lab</a>
+        <a href="#trust">Evidence</a>
+      </nav>
+      <span class="status-pill"><span></span>Public beta · Model v2.0</span>
+    </header>
+
+    <main id="main-content">
+      <section class="hero" id="overview">
+        <div class="hero-copy">
+          <p class="eyebrow">Portfolio overview · Data snapshot <span id="snapshot-date"></span></p>
+          <h1>UK Renewable Infrastructure Intelligence</h1>
+          <p class="hero-lede">Project pipeline screening and time-to-operation forecasting across the complete Renewable Energy Planning Database.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#projects">Open Project Explorer</a>
+            <a class="secondary-button" href="#scenario">Open Scenario Lab</a>
+          </div>
+          <div class="hero-proof" aria-label="Platform capabilities">
+            <span>13,000+ planning records</span>
+            <span>15 historical snapshots</span>
+            <span>Temporal model testing</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="hero-panel-top">
+            <span class="live-dot"></span>
+            <span>Portfolio forecast · Three-year horizon</span>
+          </div>
+          <p class="big-number" id="hero-expected">Loading…</p>
+          <p class="big-number-label">risk-adjusted capacity expected within three years</p>
+          <div class="confidence-row">
+            <span>Forecast status</span>
+            <strong>Research-only</strong>
+          </div>
+          <p class="fine-print">Selected model: empirical survival baseline. The AI challenger remains undeployed because corrected temporal tests did not improve reliability.</p>
+        </aside>
+      </section>
+
+      <section class="notice" aria-label="Model notice">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <div><strong>Model governance active.</strong><span>Forecast candidates are tested on temporal holdouts; unreliable challengers are rejected automatically.</span></div>
+        <a href="#trust">Review validation</a>
+      </section>
+
+      <section class="metric-grid" aria-label="Portfolio metrics">
+        <article class="metric"><span>REPD records</span><strong id="kpi-records">—</strong><small>Complete explorer dataset</small></article>
+        <article class="metric"><span>Forecast universe</span><strong id="kpi-projects">—</strong><small>Active pipeline projects</small></article>
+        <article class="metric"><span>Pipeline capacity</span><strong id="kpi-capacity">—</strong><small>Publicly reported MW</small></article>
+        <article class="metric accent-metric"><span>Three-year expected</span><strong id="kpi-expected">—</strong><small>Capacity × probability</small></article>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel span-7">
+          <div class="section-heading">
+            <div><p class="eyebrow">Portfolio composition</p><h2>Where capacity sits today</h2></div>
+            <span class="subtle">Reported MW</span>
+          </div>
+          <div class="bar-list" id="stage-chart"><p class="loading-label">Loading portfolio data…</p></div>
+        </article>
+        <article class="panel span-5">
+          <div class="section-heading">
+            <div><p class="eyebrow">Technology outlook</p><h2>Expected within three years</h2></div>
+          </div>
+          <div class="tech-list" id="tech-chart"><p class="loading-label">Loading technology data…</p></div>
+        </article>
+      </section>
+
+      <section class="section-block" id="projects">
+        <div class="section-intro">
+          <div><p class="eyebrow">Project explorer</p><h2>UK renewable project register</h2></div>
+          <p>Search all <strong id="explorer-total"></strong> REPD records. Open a row to inspect planning evidence, screening risk and available forecast horizons.</p>
+        </div>
+        <div class="coverage-strip" aria-label="Explorer data coverage">
+          <div><span>Dataset coverage</span><strong id="coverage-records"></strong><small>current REPD records</small></div>
+          <div><span>Forecast coverage</span><strong id="coverage-forecasts"></strong><small>linked active projects</small></div>
+          <div><span>Last source update</span><strong id="dataset-update"></strong><small>public-data snapshot</small></div>
+        </div>
+        <div class="panel project-panel">
+          <div class="project-tools">
+            <label class="search-box">
+              <span>Search projects</span>
+              <input id="project-search" type="search" placeholder="Project, developer, authority or reference">
+            </label>
+            <label>
+              <span>Technology</span>
+              <select id="technology-filter"><option value="">All technologies</option></select>
+            </label>
+            <label>
+              <span>Stage</span>
+              <select id="stage-filter"><option value="">All stages</option></select>
+            </label>
+            <label>
+              <span>Region</span>
+              <select id="region-filter"><option value="">All regions</option></select>
+            </label>
+          </div>
+          <div class="project-subtools">
+            <div class="filter-chips" role="group" aria-label="Forecast coverage filter">
+              <button class="filter-chip active" data-coverage="all" type="button">All records</button>
+              <button class="filter-chip" data-coverage="forecast" type="button">Forecast available</button>
+              <button class="filter-chip" data-coverage="unforecast" type="button">Planning data only</button>
+            </div>
+            <div class="sort-and-export">
+              <label>
+                <span class="sr-only">Sort projects</span>
+                <select id="project-sort">
+                  <option value="capacity">Largest capacity</option>
+                  <option value="probability">Highest 3-year probability</option>
+                  <option value="score">Highest screening score</option>
+                  <option value="name">Project name A–Z</option>
+                </select>
+              </label>
+              <button id="export-projects" class="text-button" type="button">Export filtered CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap project-table-wrap">
+            <table>
+              <thead><tr><th>Project</th><th>Technology</th><th>Stage</th><th>Capacity</th><th>Screening</th><th>Within 3 years</th><th><span class="sr-only">Details</span></th></tr></thead>
+              <tbody id="project-table"><tr><td class="empty-state" colspan="7"><strong>Loading project register…</strong><span>Preparing 13,009 records.</span></td></tr></tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <span id="project-count" aria-live="polite"></span>
+            <div class="pagination">
+              <button id="previous-page" type="button" aria-label="Previous project page">←</button>
+              <span id="page-status"></span>
+              <button id="next-page" type="button" aria-label="Next project page">→</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block" id="workbench">
+        <div class="section-intro">
+          <div><p class="eyebrow">Screening workbench</p><h2>Map, rank and evaluate projects</h2></div>
+          <p>The original modelling workspace is reproduced here with a faster public interface. Explorer filters flow into the map, rankings and opportunity answers.</p>
+        </div>
+        <div class="tool-tabs" role="tablist" aria-label="Project screening tools">
+          <button class="tool-tab active" id="map-tab" type="button" role="tab" aria-selected="true" aria-controls="map-panel" data-tool="map">Project map</button>
+          <button class="tool-tab" id="regional-tab" type="button" role="tab" aria-selected="false" aria-controls="regional-panel" data-tool="regional">Regional ranking</button>
+          <button class="tool-tab" id="shortlist-tab" type="button" role="tab" aria-selected="false" aria-controls="shortlist-panel" data-tool="shortlist">Shortlist <span id="shortlist-count-chip">0</span></button>
+          <button class="tool-tab" id="compare-tab" type="button" role="tab" aria-selected="false" aria-controls="compare-panel" data-tool="compare">Compare</button>
+          <button class="tool-tab" id="grid-tab" type="button" role="tab" aria-selected="false" aria-controls="grid-panel" data-tool="grid">Live Grid</button>
+          <button class="tool-tab" id="offshore-tab" type="button" role="tab" aria-selected="false" aria-controls="offshore-panel" data-tool="offshore">Offshore model</button>
+        </div>
+
+        <div class="tool-panel panel active" id="map-panel" role="tabpanel" aria-labelledby="map-tab">
+          <div class="tool-panel-heading">
+            <div><p class="eyebrow">Geospatial screening</p><h3>UK project map</h3></div>
+            <div class="inline-tools">
+              <label><span>Map density</span><select id="map-density"><option value="500">Top 500 by capacity</option><option value="all">All filtered projects</option></select></label>
+              <button id="refresh-map" class="text-button" type="button">Apply Explorer filters</button>
+            </div>
+          </div>
+          <div class="map-summary" id="map-summary" aria-live="polite">Map will initialise when this section enters view.</div>
+          <div id="project-map" aria-label="Interactive map of UK renewable projects"></div>
+          <p class="panel-footnote">Marker colour shows screening risk; marker size reflects reported capacity. Pan, zoom or open a marker for project details.</p>
+        </div>
+
+        <div class="tool-panel panel" id="regional-panel" role="tabpanel" aria-labelledby="regional-tab" hidden>
+          <div class="tool-panel-heading">
+            <div><p class="eyebrow">Regional opportunity</p><h3>Capacity, maturity and delivery ranking</h3></div>
+            <label class="answer-control"><span>Quick answer</span><select id="quick-answer"><option value="score">Highest-scoring projects</option><option value="construction">Largest under construction</option><option value="offshore">Largest offshore wind</option><option value="region">Largest projects by region</option></select></label>
+          </div>
+          <div class="analysis-grid">
+            <div>
+              <div class="table-wrap compact"><table><thead><tr><th>Region</th><th>Projects</th><th>Capacity</th><th>Avg score</th><th>Opportunity</th></tr></thead><tbody id="regional-table"></tbody></table></div>
+            </div>
+            <div>
+              <p class="eyebrow">Opportunity answer</p>
+              <div class="table-wrap compact"><table><thead><tr><th>Project</th><th>Stage</th><th>Capacity</th><th>Score</th></tr></thead><tbody id="answer-table"></tbody></table></div>
+            </div>
+          </div>
+          <p class="panel-footnote">Opportunity index: 40% capacity, 25% average screening score, 20% construction pipeline and 15% offshore capacity.</p>
+        </div>
+
+        <div class="tool-panel panel" id="shortlist-panel" role="tabpanel" aria-labelledby="shortlist-tab" hidden>
+          <div class="tool-panel-heading">
+            <div><p class="eyebrow">Portfolio builder</p><h3>Project shortlist</h3></div>
+            <div class="inline-actions"><button id="download-shortlist" class="primary-button" type="button">Download shortlist</button><button id="clear-shortlist" class="text-button" type="button">Clear</button></div>
+          </div>
+          <div class="mini-metric-grid">
+            <div><span>Projects</span><strong id="shortlist-projects">0</strong></div>
+            <div><span>Total capacity</span><strong id="shortlist-capacity">0 MW</strong></div>
+            <div><span>Average score</span><strong id="shortlist-score">—</strong></div>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Project</th><th>Technology</th><th>Region</th><th>Capacity</th><th>Risk</th><th></th></tr></thead><tbody id="shortlist-table"></tbody></table></div>
+        </div>
+
+        <div class="tool-panel panel" id="compare-panel" role="tabpanel" aria-labelledby="compare-tab" hidden>
+          <div class="tool-panel-heading"><div><p class="eyebrow">Side-by-side diligence</p><h3>Compare two projects</h3></div></div>
+          <div class="compare-selectors">
+            <label><span>Project A</span><select id="compare-a"></select></label>
+            <label><span>Project B</span><select id="compare-b"></select></label>
+          </div>
+          <div id="compare-content"></div>
+        </div>
+
+        <div class="tool-panel panel" id="grid-panel" role="tabpanel" aria-labelledby="grid-tab" hidden>
+          <div class="tool-panel-heading">
+            <div><p class="eyebrow">Near-live GB context</p><h3>Carbon intensity and generation mix</h3></div>
+            <button id="refresh-grid" class="text-button" type="button">Refresh live data</button>
+          </div>
+          <div class="mini-metric-grid four" id="grid-metrics"><div><span>Status</span><strong>Not loaded</strong></div></div>
+          <p id="grid-period" class="panel-footnote">Open this tab or press refresh to request the latest National Grid ESO context.</p>
+          <div class="generation-chart" id="generation-chart"></div>
+        </div>
+
+        <div class="tool-panel panel" id="offshore-panel" role="tabpanel" aria-labelledby="offshore-tab" hidden>
+          <div class="tool-panel-heading">
+            <div><p class="eyebrow">Techno-economic model</p><h3>Offshore wind quick calculator</h3></div>
+            <label class="wide-select"><span>Offshore project</span><select id="offshore-project"></select></label>
+          </div>
+          <div class="calculator-grid">
+            <aside class="control-panel">
+              <div class="control"><div><label for="capacity-factor">Capacity factor</label><output id="capacity-factor-output"></output></div><input id="capacity-factor" type="range" min="0.20" max="0.70" value="0.45" step="0.01"></div>
+              <div class="control"><div><label for="turbine-rating">Turbine rating</label><output id="turbine-rating-output"></output></div><input id="turbine-rating" type="range" min="5" max="25" value="15" step="0.5"></div>
+              <div class="control"><div><label for="electricity-price">Electricity price</label><output id="electricity-price-output"></output></div><input id="electricity-price" type="range" min="20" max="200" value="70" step="5"></div>
+              <div class="control"><div><label for="capex-rate">CAPEX per MW</label><output id="capex-rate-output"></output></div><input id="capex-rate" type="range" min="1" max="8" value="3" step="0.1"></div>
+              <div class="control"><div><label for="project-life">Project lifetime</label><output id="project-life-output"></output></div><input id="project-life" type="range" min="10" max="40" value="25" step="1"></div>
+              <div class="control"><div><label for="grid-carbon">Displaced grid carbon</label><output id="grid-carbon-output"></output></div><input id="grid-carbon" type="range" min="0" max="0.60" value="0.20" step="0.01"></div>
+            </aside>
+            <div>
+              <div class="calculator-project" id="calculator-project"></div>
+              <div class="result-grid" id="calculator-results"></div>
+              <p class="panel-footnote">Illustrative engineering screen only. Revenue excludes operating costs, financing, degradation, curtailment, taxes and transmission charges.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block scenario-section" id="scenario">
+        <div class="section-intro">
+          <div><p class="eyebrow">Scenario lab</p><h2>External-risk sensitivity analysis</h2></div>
+          <p>Adjust external conditions to stress-test the published forecast. Effects are bounded assumptions, deliberately separated from the trained model.</p>
+        </div>
+        <div class="scenario-grid">
+          <aside class="control-panel">
+            <div class="control">
+              <div><label for="rate-slider">Bank Rate change</label><output id="rate-output">+0.00 pp</output></div>
+              <input id="rate-slider" type="range" min="-3" max="3" step="0.25" value="0">
+              <div class="range-labels"><span>-3 pp</span><span>+3 pp</span></div>
+            </div>
+            <div class="control">
+              <div><label for="cost-slider">Construction-cost shock</label><output id="cost-output">+0%</output></div>
+              <input id="cost-slider" type="range" min="-20" max="30" step="1" value="0">
+              <div class="range-labels"><span>-20%</span><span>+30%</span></div>
+            </div>
+            <div class="control">
+              <div><label for="grid-slider">Additional grid delay</label><output id="grid-output">0.0 years</output></div>
+              <input id="grid-slider" type="range" min="0" max="5" step="0.5" value="0">
+              <div class="range-labels"><span>0 years</span><span>5 years</span></div>
+            </div>
+            <div class="control">
+              <label for="policy-select">Policy environment</label>
+              <select id="policy-select"><option value="restrictive">Restrictive</option><option value="neutral" selected>Neutral</option><option value="supportive">Supportive</option></select>
+            </div>
+            <label class="check-control"><input id="cfd-check" type="checkbox"><span>Assume additional CfD support</span></label>
+            <button id="reset-scenario" class="secondary-button button-reset" type="button">Reset scenario</button>
+          </aside>
+          <article class="scenario-result">
+            <div class="scenario-result-head"><p class="eyebrow">Three-year portfolio estimate</p><span>Live stress test</span></div>
+            <div class="scenario-values">
+              <div><span>Reference</span><strong id="reference-value"></strong></div>
+              <div class="arrow" aria-hidden="true">→</div>
+              <div><span>Scenario</span><strong id="scenario-value"></strong></div>
+            </div>
+            <div class="delta-chip" id="scenario-delta"></div>
+            <div class="comparison-track" aria-hidden="true"><span id="reference-bar"></span><span id="scenario-bar"></span></div>
+            <p class="scenario-note" id="scenario-note">Current-conditions reference scenario.</p>
+            <div class="macro-row" id="macro-row"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block" id="trust">
+        <div class="section-intro">
+          <div><p class="eyebrow">Evidence &amp; methodology</p><h2>Forecast validation and data quality</h2></div>
+          <p>Temporal holdouts, explicit limitations and source-quality checks make clear where the platform is useful—and where it is not ready.</p>
+        </div>
+        <div class="trust-grid">
+          <article class="panel trust-summary">
+            <span class="research-badge">Research-only forecast</span>
+            <h3>Transparent survival baseline deployed</h3>
+            <p>CatBoost remains a diagnostic challenger. It was rejected because its temporal-holdout Brier score did not improve reliability consistently.</p>
+            <div class="trust-stats">
+              <div><strong id="panel-rows"></strong><span>panel rows</span></div>
+              <div><strong id="linked-projects"></strong><span>linked histories</span></div>
+              <div><strong id="intervals"></strong><span>survival intervals</span></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="section-heading"><div><p class="eyebrow">Temporal holdout</p><h3>Candidate comparison</h3></div><span class="subtle">Lower Brier is better</span></div>
+            <div class="table-wrap compact"><table><thead><tr><th>Horizon</th><th>Model</th><th>ROC-AUC</th><th>Brier</th><th>Status</th></tr></thead><tbody id="backtest-table"></tbody></table></div>
+          </article>
+        </div>
+        <div class="quality-grid" id="quality-grid"></div>
+        <div class="methodology-footer">
+          <div><p class="eyebrow">Known limitations</p><ul id="limitations-list"></ul></div>
+          <div><p class="eyebrow">Source stack</p><p>UK Renewable Energy Planning Database · Office for National Statistics · Bank of England</p></div>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="project-dialog" aria-labelledby="dialog-title">
+      <button class="dialog-close" type="button" aria-label="Close project details">×</button>
+      <div id="project-dialog-content"></div>
+    </dialog>
+
+    <footer>
+      <div><strong>UK Renewable Infrastructure Intelligence</strong><p>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</p></div>
+      <div class="footer-links">
+        <a href="https://github.com/hj-nakamura421/uk-renewable-energy-dashboard" target="_blank" rel="noreferrer">View source code ↗</a>
+        <a href="https://uk-renewable-project-screening.streamlit.app/" target="_blank" rel="noreferrer">Open modelling workspace ↗</a>
+        <span>Model v2.0 · Research only · Not investment advice</span>
+      </div>
+    </footer>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>window.DASHBOARD_DATA=null;</script>
+    <script>(async () => {
+const data = window.DASHBOARD_DATA || await fetch("./dashboard-data.json?v=20260730-map-workbench").then((response) => {
+  if (!response.ok) throw new Error(`Dashboard data request failed (${response.status})`);
+  return response.json();
+});
+const qs = (selector) => document.querySelector(selector);
+const qsa = (selector) => [...document.querySelectorAll(selector)];
+const numberFormatter = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
+const compactFormatter = new Intl.NumberFormat("en-GB", { notation: "compact", maximumFractionDigits: 1 });
+const formatNumber = (value) => numberFormatter.format(Number(value) || 0);
+const formatMw = (value, compact = false) => `${compact ? compactFormatter.format(Number(value) || 0) : formatNumber(value)} MW`;
+const formatPercent = (value, digits = 1) => Number.isFinite(Number(value)) ? `${(100 * Number(value)).toFixed(digits)}%` : "Not modelled";
+const formatDate = (value, options = { day: "2-digit", month: "short", year: "numeric" }) => {
+  if (!value) return "Not reported";
+  const parts = String(value).split("/");
+  const date = parts.length === 3
+    ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}T12:00:00`)
+    : new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T12:00:00` : value);
+  return Number.isNaN(date.valueOf()) ? String(value) : date.toLocaleDateString("en-GB", options);
+};
+const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+}[character]));
+const safeValue = (value, fallback = "Not reported") => value === null || value === undefined || String(value).trim() === "" ? fallback : String(value);
+const csvCell = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+const downloadText = (filename, content, type = "text/plain;charset=utf-8") => {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([content], { type }));
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+qs("#snapshot-date").textContent = formatDate(data.latestSnapshot);
+qs("#hero-expected").textContent = formatMw(data.kpis.expected3yMw, true);
+qs("#kpi-records").textContent = formatNumber(data.kpis.datasetProjects);
+qs("#kpi-projects").textContent = formatNumber(data.kpis.activeProjects);
+qs("#kpi-capacity").textContent = formatMw(data.kpis.pipelineCapacityMw, true);
+qs("#kpi-expected").textContent = formatMw(data.kpis.expected3yMw, true);
+qs("#explorer-total").textContent = formatNumber(data.kpis.datasetProjects);
+qs("#coverage-records").textContent = formatNumber(data.kpis.datasetProjects);
+qs("#coverage-forecasts").textContent = formatNumber(data.kpis.forecastCoverage);
+qs("#dataset-update").textContent = formatDate(data.dataset.latestRecordUpdate, { month: "short", year: "numeric" });
+
+const stages = data.groups.stage.slice(0, 7);
+const maxStageCapacity = Math.max(...stages.map((item) => item.capacity_mw));
+qs("#stage-chart").innerHTML = stages.map((item) => `
+  <div class="bar-item">
+    <div class="bar-item-header"><span>${escapeHtml(item.name)}</span><strong>${formatMw(item.capacity_mw)}</strong></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${100 * item.capacity_mw / maxStageCapacity}%"></div></div>
+  </div>
+`).join("");
+
+const maxTechExpected = Math.max(...data.groups.technology.map((item) => item.expected_3y_mw));
+qs("#tech-chart").innerHTML = data.groups.technology.slice(0, 7).map((item) => `
+  <div class="tech-item">
+    <span>${escapeHtml(item.name)}</span>
+    <small>${formatNumber(item.projects)} projects</small>
+    <strong>${formatMw(item.expected_3y_mw)}</strong>
+    <span class="tech-meter"><i style="width:${100 * item.expected_3y_mw / maxTechExpected}%"></i></span>
+  </div>
+`).join("");
+
+data.projects.forEach((project, index) => {
+  project._index = index;
+  project._search = [
+    project.site_name,
+    project.operator,
+    project.technology,
+    project.region,
+    project.county,
+    project.planning_authority,
+    project.planning_reference,
+    project.ref_id,
+  ].join(" ").toLowerCase();
+});
+
+const populateSelect = (selector, values) => {
+  qs(selector).insertAdjacentHTML(
+    "beforeend",
+    [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)))
+      .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")
+  );
+};
+populateSelect("#technology-filter", data.projects.map((project) => project.technology));
+populateSelect("#stage-filter", data.projects.map((project) => project.stage));
+populateSelect("#region-filter", data.projects.map((project) => project.region));
+
+const projectState = {
+  page: 1,
+  pageSize: 25,
+  coverage: "all",
+  filtered: data.projects,
+};
+let storedShortlist = [];
+try {
+  storedShortlist = JSON.parse(localStorage.getItem("renewable-project-shortlist") || "[]");
+} catch {
+  storedShortlist = [];
+}
+const shortlist = new Set(storedShortlist.filter((index) => Number.isInteger(index) && data.projects[index]));
+
+function projectBadge(project) {
+  const risk = safeValue(project.screening_risk, "Unknown");
+  return `<span class="risk-badge risk-${risk.toLowerCase()}">${escapeHtml(risk)} · ${formatNumber(project.screening_score)}</span>`;
+}
+
+function getFilteredProjects() {
+  const query = qs("#project-search").value.trim().toLowerCase();
+  const technology = qs("#technology-filter").value;
+  const stage = qs("#stage-filter").value;
+  const region = qs("#region-filter").value;
+  const sort = qs("#project-sort").value;
+  const filtered = data.projects.filter((project) => {
+    const coverageMatch = projectState.coverage === "all"
+      || (projectState.coverage === "forecast" && project.has_forecast)
+      || (projectState.coverage === "unforecast" && !project.has_forecast);
+    return coverageMatch
+      && (!query || project._search.includes(query))
+      && (!technology || project.technology === technology)
+      && (!stage || project.stage === stage)
+      && (!region || project.region === region);
+  });
+  const compareNumber = (key) => (a, b) => (Number(b[key]) || -1) - (Number(a[key]) || -1);
+  filtered.sort(
+    sort === "probability" ? compareNumber("prob_operational_3y")
+      : sort === "score" ? compareNumber("screening_score")
+        : sort === "name" ? (a, b) => safeValue(a.site_name).localeCompare(safeValue(b.site_name))
+          : compareNumber("capacity_mw")
+  );
+  return filtered;
+}
+
+function renderProjects(resetPage = false) {
+  if (resetPage) projectState.page = 1;
+  projectState.filtered = getFilteredProjects();
+  const pageCount = Math.max(1, Math.ceil(projectState.filtered.length / projectState.pageSize));
+  projectState.page = Math.min(projectState.page, pageCount);
+  const start = (projectState.page - 1) * projectState.pageSize;
+  const results = projectState.filtered.slice(start, start + projectState.pageSize);
+
+  qs("#project-table").innerHTML = results.map((project) => `
+    <tr>
+      <td><strong>${escapeHtml(safeValue(project.site_name, "Unnamed project"))}</strong><small>${escapeHtml(safeValue(project.operator, "Developer not reported"))}</small></td>
+      <td>${escapeHtml(safeValue(project.technology))}</td>
+      <td><span class="stage-label">${escapeHtml(safeValue(project.stage))}</span></td>
+      <td class="numeric">${formatMw(project.capacity_mw)}</td>
+      <td>${projectBadge(project)}</td>
+      <td class="probability">
+        ${project.has_forecast
+          ? `<span class="mini-track"><span style="width:${100 * project.prob_operational_3y}%"></span></span><strong>${formatPercent(project.prob_operational_3y)}</strong>`
+          : `<span class="not-modelled">Planning data only</span>`}
+      </td>
+      <td><div class="row-actions">
+        <button class="shortlist-action ${shortlist.has(project._index) ? "active" : ""}" type="button" data-shortlist-index="${project._index}" aria-label="${shortlist.has(project._index) ? "Remove" : "Add"} ${escapeHtml(safeValue(project.site_name, "project"))} ${shortlist.has(project._index) ? "from" : "to"} shortlist">+</button>
+        <button class="row-action" type="button" data-open-project="${project._index}" aria-label="Open ${escapeHtml(safeValue(project.site_name, "project"))} details">↗</button>
+      </div></td>
+    </tr>
+  `).join("") || `<tr><td class="empty-state" colspan="7"><strong>No projects found.</strong><span>Try clearing a filter or using a broader search.</span></td></tr>`;
+
+  const rangeEnd = Math.min(start + results.length, projectState.filtered.length);
+  qs("#project-count").textContent = projectState.filtered.length
+    ? `${formatNumber(start + 1)}–${formatNumber(rangeEnd)} of ${formatNumber(projectState.filtered.length)} projects`
+    : "0 projects";
+  qs("#page-status").textContent = `Page ${projectState.page} of ${pageCount}`;
+  qs("#previous-page").disabled = projectState.page <= 1;
+  qs("#next-page").disabled = projectState.page >= pageCount;
+}
+
+["#project-search", "#technology-filter", "#stage-filter", "#region-filter", "#project-sort"].forEach((selector) => {
+  qs(selector).addEventListener("input", () => renderProjects(true));
+});
+qsa(".filter-chip").forEach((button) => {
+  button.addEventListener("click", () => {
+    qsa(".filter-chip").forEach((item) => item.classList.toggle("active", item === button));
+    projectState.coverage = button.dataset.coverage;
+    renderProjects(true);
+  });
+});
+qs("#previous-page").addEventListener("click", () => {
+  projectState.page -= 1;
+  renderProjects();
+  qs(".project-table-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+qs("#next-page").addEventListener("click", () => {
+  projectState.page += 1;
+  renderProjects();
+  qs(".project-table-wrap").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+function factorList(value, emptyText) {
+  const factors = safeValue(value, "").replace(/^\[|\]$/g, "").split(/[;|]/).map((item) => item.replace(/^['"\s]+|['"\s]+$/g, "")).filter(Boolean);
+  return factors.length ? `<ul>${factors.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${emptyText}</p>`;
+}
+
+function openProject(project) {
+  const dialog = qs("#project-dialog");
+  const forecast = project.has_forecast ? `
+    <div class="forecast-grid">
+      <div><span>Within 2 years</span><strong>${formatPercent(project.prob_operational_2y)}</strong></div>
+      <div><span>Within 3 years</span><strong>${formatPercent(project.prob_operational_3y)}</strong></div>
+      <div><span>Within 5 years</span><strong>${formatPercent(project.prob_operational_5y)}</strong></div>
+    </div>
+    <div class="factor-grid">
+      <div><h4>Positive evidence</h4>${factorList(project.positive_factors, "No additional positive factors recorded.")}</div>
+      <div><h4>Risks and constraints</h4>${factorList(project.risk_factors, "No additional risk factors recorded.")}</div>
+    </div>
+  ` : `<div class="forecast-unavailable"><strong>No forward forecast for this record</strong><p>The project remains available for planning-data screening but is outside the current active forecast universe.</p></div>`;
+
+  qs("#project-dialog-content").innerHTML = `
+    <p class="eyebrow">REPD ${escapeHtml(String(project.ref_id).padStart(5, "0"))}</p>
+    <h2 id="dialog-title">${escapeHtml(safeValue(project.site_name, "Unnamed project"))}</h2>
+    <p class="dialog-lede">${escapeHtml(safeValue(project.operator, "Developer not reported"))}</p>
+    <div class="dialog-badges">${projectBadge(project)}<span class="stage-label">${escapeHtml(safeValue(project.stage))}</span></div>
+    <div class="project-facts">
+      <div><span>Technology</span><strong>${escapeHtml(safeValue(project.technology))}</strong></div>
+      <div><span>Capacity</span><strong>${formatMw(project.capacity_mw)}</strong></div>
+      <div><span>Region</span><strong>${escapeHtml(safeValue(project.region))}</strong></div>
+      <div><span>County</span><strong>${escapeHtml(safeValue(project.county))}</strong></div>
+      <div><span>Planning authority</span><strong>${escapeHtml(safeValue(project.planning_authority))}</strong></div>
+      <div><span>Planning reference</span><strong>${escapeHtml(safeValue(project.planning_reference))}</strong></div>
+      <div><span>Record updated</span><strong>${escapeHtml(formatDate(project.record_updated))}</strong></div>
+      <div><span>CfD round</span><strong>${escapeHtml(safeValue(project.cfd_round))}</strong></div>
+    </div>
+    <div class="dialog-section"><p class="eyebrow">Time-to-operation outlook</p>${forecast}</div>
+    <div class="dialog-actions">
+      <button class="primary-button" type="button" data-shortlist-dialog="${project._index}">${shortlist.has(project._index) ? "Remove from shortlist" : "Add to shortlist"}</button>
+      <button class="secondary-button" type="button" data-brief-index="${project._index}">Download project brief</button>
+    </div>
+    <p class="dialog-disclaimer">Screening scores are transparent heuristics. Forecasts are research estimates based on public data and are not investment advice.</p>
+  `;
+  dialog.showModal();
+}
+
+qs("#project-table").addEventListener("click", (event) => {
+  const shortlistButton = event.target.closest("[data-shortlist-index]");
+  if (shortlistButton) {
+    toggleShortlist(Number(shortlistButton.dataset.shortlistIndex));
+    return;
+  }
+  const button = event.target.closest("[data-open-project]");
+  if (button) openProject(data.projects[Number(button.dataset.openProject)]);
+});
+qs("#project-dialog-content").addEventListener("click", (event) => {
+  const shortlistButton = event.target.closest("[data-shortlist-dialog]");
+  if (shortlistButton) {
+    const index = Number(shortlistButton.dataset.shortlistDialog);
+    toggleShortlist(index);
+    openProject(data.projects[index]);
+  }
+  const briefButton = event.target.closest("[data-brief-index]");
+  if (briefButton) downloadProjectBrief(data.projects[Number(briefButton.dataset.briefIndex)]);
+});
+qs(".dialog-close").addEventListener("click", () => qs("#project-dialog").close());
+qs("#project-dialog").addEventListener("click", (event) => {
+  if (event.target === qs("#project-dialog")) qs("#project-dialog").close();
+});
+
+qs("#export-projects").addEventListener("click", () => {
+  const columns = [
+    ["REPD reference", "ref_id"], ["Project", "site_name"], ["Operator", "operator"],
+    ["Technology", "technology"], ["Stage", "stage"], ["Region", "region"],
+    ["Capacity MW", "capacity_mw"], ["Screening score", "screening_score"],
+    ["Screening risk", "screening_risk"], ["3-year probability", "prob_operational_3y"],
+  ];
+  const csv = [
+    columns.map(([label]) => csvCell(label)).join(","),
+    ...projectState.filtered.map((project) => columns.map(([, key]) => csvCell(project[key])).join(",")),
+  ].join("\n");
+  downloadText("uk-renewable-projects-filtered.csv", csv, "text/csv;charset=utf-8");
+});
+
+function persistShortlist() {
+  localStorage.setItem("renewable-project-shortlist", JSON.stringify([...shortlist]));
+}
+
+function toggleShortlist(index) {
+  if (shortlist.has(index)) shortlist.delete(index);
+  else shortlist.add(index);
+  persistShortlist();
+  renderShortlist();
+  renderProjects();
+}
+
+function projectBrief(project) {
+  return `UK Renewable Project Brief
+==========================
+
+Project: ${safeValue(project.site_name)}
+REPD reference: ${String(project.ref_id).padStart(5, "0")}
+
+Executive summary
+-----------------
+Technology: ${safeValue(project.technology)}
+Installed capacity: ${formatMw(project.capacity_mw)}
+Development status: ${safeValue(project.stage)}
+Screening score: ${formatNumber(project.screening_score)}/100
+Screening risk: ${safeValue(project.screening_risk)}
+
+Developer and location
+----------------------
+Operator / applicant: ${safeValue(project.operator)}
+Region: ${safeValue(project.region)}
+County: ${safeValue(project.county)}
+Country: ${safeValue(project.country)}
+
+Planning evidence
+-----------------
+Planning authority: ${safeValue(project.planning_authority)}
+Planning reference: ${safeValue(project.planning_reference)}
+Planning submitted: ${formatDate(project.planning_submitted)}
+Planning granted: ${formatDate(project.planning_granted)}
+Under construction: ${formatDate(project.under_construction)}
+Operational: ${formatDate(project.operational)}
+Record updated: ${formatDate(project.record_updated)}
+
+Time-to-operation outlook
+-------------------------
+Within 2 years: ${formatPercent(project.prob_operational_2y)}
+Within 3 years: ${formatPercent(project.prob_operational_3y)}
+Within 5 years: ${formatPercent(project.prob_operational_5y)}
+Forecast confidence: ${safeValue(project.forecast_confidence)}
+
+Interpretation
+--------------
+This is an early-stage screening summary based on public project data. Screening
+scores are transparent heuristics and forecasts are research estimates, not
+investment advice.
+
+Generated by UK Renewable Infrastructure Intelligence.
+`;
+}
+
+function downloadProjectBrief(project) {
+  const filename = safeValue(project.site_name, "renewable-project")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  downloadText(`${filename || "renewable-project"}-brief.txt`, projectBrief(project));
+}
+
+function renderShortlist() {
+  const selected = [...shortlist].map((index) => data.projects[index]).filter(Boolean);
+  const capacity = selected.reduce((sum, project) => sum + (Number(project.capacity_mw) || 0), 0);
+  const averageScore = selected.length
+    ? selected.reduce((sum, project) => sum + (Number(project.screening_score) || 0), 0) / selected.length
+    : 0;
+  qs("#shortlist-count-chip").textContent = formatNumber(selected.length);
+  qs("#shortlist-projects").textContent = formatNumber(selected.length);
+  qs("#shortlist-capacity").textContent = formatMw(capacity, true);
+  qs("#shortlist-score").textContent = selected.length ? `${averageScore.toFixed(1)}/100` : "—";
+  qs("#download-shortlist").disabled = !selected.length;
+  qs("#clear-shortlist").disabled = !selected.length;
+  qs("#shortlist-table").innerHTML = selected.map((project) => `
+    <tr>
+      <td><strong>${escapeHtml(safeValue(project.site_name))}</strong><small>${escapeHtml(safeValue(project.operator))}</small></td>
+      <td>${escapeHtml(safeValue(project.technology))}</td>
+      <td>${escapeHtml(safeValue(project.region))}</td>
+      <td>${formatMw(project.capacity_mw)}</td>
+      <td>${projectBadge(project)}</td>
+      <td><button class="shortlist-action active" type="button" data-remove-shortlist="${project._index}" aria-label="Remove ${escapeHtml(safeValue(project.site_name))} from shortlist">×</button></td>
+    </tr>
+  `).join("") || `<tr><td class="empty-state" colspan="6"><strong>Your shortlist is empty.</strong><span>Add projects from the register or a project brief.</span></td></tr>`;
+}
+
+qs("#shortlist-table").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-remove-shortlist]");
+  if (button) toggleShortlist(Number(button.dataset.removeShortlist));
+});
+qs("#clear-shortlist").addEventListener("click", () => {
+  shortlist.clear();
+  persistShortlist();
+  renderShortlist();
+  renderProjects();
+});
+qs("#download-shortlist").addEventListener("click", () => {
+  const columns = [
+    ["REPD reference", "ref_id"], ["Project", "site_name"], ["Operator", "operator"],
+    ["Technology", "technology"], ["Stage", "stage"], ["Region", "region"],
+    ["Capacity MW", "capacity_mw"], ["Screening score", "screening_score"],
+    ["Screening risk", "screening_risk"], ["3-year probability", "prob_operational_3y"],
+  ];
+  const selected = [...shortlist].map((index) => data.projects[index]).filter(Boolean);
+  const csv = [
+    columns.map(([label]) => csvCell(label)).join(","),
+    ...selected.map((project) => columns.map(([, key]) => csvCell(project[key])).join(",")),
+  ].join("\n");
+  downloadText("renewable-project-shortlist.csv", csv, "text/csv;charset=utf-8");
+});
+renderShortlist();
+
+let projectMap;
+let projectMapLayer;
+function renderMap() {
+  const container = qs("#project-map");
+  if (!window.L) {
+    container.innerHTML = `<div class="empty-state"><strong>Map library unavailable.</strong><span>The rest of the dashboard remains available.</span></div>`;
+    return;
+  }
+  if (!projectMap) {
+    projectMap = L.map(container, { preferCanvas: true, zoomControl: true }).setView([54.7, -3.4], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(projectMap);
+  }
+  if (projectMapLayer) projectMapLayer.remove();
+  projectMapLayer = L.layerGroup().addTo(projectMap);
+  const mapped = projectState.filtered.filter((project) => (
+    Number.isFinite(Number(project.latitude))
+    && Number.isFinite(Number(project.longitude))
+    && Number(project.latitude) >= 49
+    && Number(project.latitude) <= 61.5
+    && Number(project.longitude) >= -9.5
+    && Number(project.longitude) <= 3.5
+  ));
+  const density = qs("#map-density").value;
+  const visible = density === "all"
+    ? mapped
+    : [...mapped].sort((a, b) => (Number(b.capacity_mw) || 0) - (Number(a.capacity_mw) || 0)).slice(0, Number(density));
+  const bounds = [];
+  visible.forEach((project) => {
+    const risk = safeValue(project.screening_risk, "Unknown").toLowerCase();
+    const capacity = Math.max(0, Number(project.capacity_mw) || 0);
+    const marker = L.circleMarker([Number(project.latitude), Number(project.longitude)], {
+      renderer: projectMap.options.renderer,
+      radius: Math.max(3, Math.min(11, 2.5 + Math.sqrt(capacity) / 6)),
+      color: "#ffffff",
+      weight: 1.25,
+      fillColor: risk === "high" ? "#a44d42" : risk === "medium" ? "#b97816" : "#087b72",
+      fillOpacity: .82,
+    });
+    marker.bindPopup(`
+      <strong>${escapeHtml(safeValue(project.site_name))}</strong>
+      ${escapeHtml(safeValue(project.technology))} · ${formatMw(project.capacity_mw)}<br>
+      ${escapeHtml(safeValue(project.stage))} · ${escapeHtml(safeValue(project.region))}<br>
+      <button class="text-button map-open-project" type="button" data-map-open="${project._index}">Open project brief</button>
+    `);
+    marker.addTo(projectMapLayer);
+    bounds.push([Number(project.latitude), Number(project.longitude)]);
+  });
+  qs("#map-summary").textContent = `${formatNumber(visible.length)} mapped projects shown · ${formatNumber(mapped.length)} filtered records have valid coordinates`;
+  if (bounds.length) projectMap.fitBounds(bounds, { padding: [22, 22], maxZoom: 8 });
+  window.setTimeout(() => projectMap.invalidateSize(), 50);
+}
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-map-open]");
+  if (button) openProject(data.projects[Number(button.dataset.mapOpen)]);
+});
+qs("#refresh-map").addEventListener("click", renderMap);
+qs("#map-density").addEventListener("change", renderMap);
+
+function renderRegional() {
+  const regionMap = new Map();
+  projectState.filtered.forEach((project) => {
+    const name = safeValue(project.region, "Unknown");
+    if (!regionMap.has(name)) regionMap.set(name, { name, projects: 0, capacity: 0, score: 0, offshore: 0, construction: 0, operational: 0 });
+    const region = regionMap.get(name);
+    const capacity = Number(project.capacity_mw) || 0;
+    region.projects += 1;
+    region.capacity += capacity;
+    region.score += Number(project.screening_score) || 0;
+    if (safeValue(project.technology, "").toLowerCase().includes("wind offshore")) region.offshore += capacity;
+    if (safeValue(project.stage, "").toLowerCase().includes("construction")) region.construction += capacity;
+    if (safeValue(project.stage, "").toLowerCase().includes("operational")) region.operational += capacity;
+  });
+  const regions = [...regionMap.values()];
+  const maxCapacity = Math.max(1, ...regions.map((region) => region.capacity));
+  const maxConstruction = Math.max(1, ...regions.map((region) => region.construction));
+  const maxOffshore = Math.max(1, ...regions.map((region) => region.offshore));
+  regions.forEach((region) => {
+    region.averageScore = region.projects ? region.score / region.projects : 0;
+    region.opportunity = (
+      .40 * region.capacity / maxCapacity * 100
+      + .25 * region.averageScore
+      + .20 * region.construction / maxConstruction * 100
+      + .15 * region.offshore / maxOffshore * 100
+    );
+  });
+  regions.sort((a, b) => b.opportunity - a.opportunity);
+  qs("#regional-table").innerHTML = regions.map((region) => `
+    <tr><td><strong>${escapeHtml(region.name)}</strong></td><td>${formatNumber(region.projects)}</td><td>${formatMw(region.capacity, true)}</td><td>${region.averageScore.toFixed(1)}</td><td><strong>${region.opportunity.toFixed(1)}</strong></td></tr>
+  `).join("") || `<tr><td class="empty-state" colspan="5">No regional records match the Explorer filters.</td></tr>`;
+  renderQuickAnswer();
+}
+
+function renderQuickAnswer() {
+  const answer = qs("#quick-answer").value;
+  let projects = [...projectState.filtered];
+  if (answer === "construction") {
+    projects = projects.filter((project) => safeValue(project.stage, "").toLowerCase().includes("construction"))
+      .sort((a, b) => Number(b.capacity_mw) - Number(a.capacity_mw));
+  } else if (answer === "offshore") {
+    projects = projects.filter((project) => safeValue(project.technology, "").toLowerCase().includes("wind offshore"))
+      .sort((a, b) => Number(b.capacity_mw) - Number(a.capacity_mw));
+  } else if (answer === "region") {
+    projects.sort((a, b) => Number(b.capacity_mw) - Number(a.capacity_mw));
+  } else {
+    projects.sort((a, b) => Number(b.screening_score) - Number(a.screening_score) || Number(b.capacity_mw) - Number(a.capacity_mw));
+  }
+  qs("#answer-table").innerHTML = projects.slice(0, 10).map((project) => `
+    <tr><td><button class="table-link" type="button" data-answer-open="${project._index}">${escapeHtml(safeValue(project.site_name))}</button><small>${escapeHtml(safeValue(project.region))}</small></td><td>${escapeHtml(safeValue(project.stage))}</td><td>${formatMw(project.capacity_mw, true)}</td><td>${formatNumber(project.screening_score)}</td></tr>
+  `).join("") || `<tr><td class="empty-state" colspan="4">No projects match this answer.</td></tr>`;
+}
+qs("#quick-answer").addEventListener("change", renderQuickAnswer);
+qs("#answer-table").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-answer-open]");
+  if (button) openProject(data.projects[Number(button.dataset.answerOpen)]);
+});
+
+const comparisonProjects = [...data.projects].sort((a, b) => safeValue(a.site_name).localeCompare(safeValue(b.site_name)));
+let comparisonInitialised = false;
+
+function ensureComparisonInitialised() {
+  if (comparisonInitialised) return;
+  const comparisonOptions = comparisonProjects.map((project) => `<option value="${project._index}">${escapeHtml(safeValue(project.site_name))} · ${formatMw(project.capacity_mw, true)}</option>`).join("");
+  qs("#compare-a").innerHTML = comparisonOptions;
+  qs("#compare-b").innerHTML = comparisonOptions;
+  if (comparisonProjects.length > 1) qs("#compare-b").value = String(comparisonProjects[1]._index);
+  comparisonInitialised = true;
+  renderComparison();
+}
+
+function renderComparison() {
+  const a = data.projects[Number(qs("#compare-a").value)];
+  const b = data.projects[Number(qs("#compare-b").value)];
+  if (!a || !b) return;
+  const rows = [
+    ["Technology", safeValue(a.technology), safeValue(b.technology)],
+    ["Capacity", formatMw(a.capacity_mw), formatMw(b.capacity_mw)],
+    ["Development stage", safeValue(a.stage), safeValue(b.stage)],
+    ["Region", safeValue(a.region), safeValue(b.region)],
+    ["Operator / applicant", safeValue(a.operator), safeValue(b.operator)],
+    ["Screening score", `${formatNumber(a.screening_score)}/100`, `${formatNumber(b.screening_score)}/100`],
+    ["Risk level", safeValue(a.screening_risk), safeValue(b.screening_risk)],
+    ["Within 3 years", formatPercent(a.prob_operational_3y), formatPercent(b.prob_operational_3y)],
+  ];
+  qs("#compare-content").innerHTML = `
+    <div class="table-wrap"><table class="comparison-table"><thead><tr><th>Metric</th><th>${escapeHtml(safeValue(a.site_name))}</th><th>${escapeHtml(safeValue(b.site_name))}</th></tr></thead><tbody>
+      ${rows.map(([label, aValue, bValue]) => `<tr><td>${escapeHtml(label)}</td><td><strong>${escapeHtml(aValue)}</strong></td><td><strong>${escapeHtml(bValue)}</strong></td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="mini-metric-grid">
+      <div><span>${escapeHtml(safeValue(a.site_name))} screening</span><strong>${formatNumber(a.screening_score)}/100</strong><div class="comparison-meter"><span style="width:${Number(a.screening_score) || 0}%"></span></div></div>
+      <div><span>${escapeHtml(safeValue(b.site_name))} screening</span><strong>${formatNumber(b.screening_score)}/100</strong><div class="comparison-meter"><span style="width:${Number(b.screening_score) || 0}%"></span></div></div>
+      <div><span>Capacity difference</span><strong>${formatMw(Math.abs(Number(a.capacity_mw) - Number(b.capacity_mw)), true)}</strong></div>
+    </div>`;
+}
+qs("#compare-a").addEventListener("change", renderComparison);
+qs("#compare-b").addEventListener("change", renderComparison);
+
+let gridLoaded = false;
+async function refreshGrid() {
+  const button = qs("#refresh-grid");
+  button.disabled = true;
+  button.textContent = "Refreshing…";
+  qs("#grid-metrics").innerHTML = `<div><span>Status</span><strong>Loading…</strong></div>`;
+  try {
+    const [intensityResponse, generationResponse] = await Promise.all([
+      fetch("https://api.carbonintensity.org.uk/intensity", { cache: "no-store" }),
+      fetch("https://api.carbonintensity.org.uk/generation", { cache: "no-store" }),
+    ]);
+    if (!intensityResponse.ok || !generationResponse.ok) throw new Error("Grid API returned an error");
+    const intensityPayload = await intensityResponse.json();
+    const generationPayload = await generationResponse.json();
+    const intensityRecord = intensityPayload.data?.[0] || {};
+    const intensity = intensityRecord.intensity || {};
+    const mix = generationPayload.data?.generationmix || [];
+    const renewableFuels = new Set(["wind", "solar", "hydro", "biomass"]);
+    const renewableShare = mix.reduce((sum, item) => sum + (renewableFuels.has(item.fuel) ? Number(item.perc) || 0 : 0), 0);
+    const dominant = [...mix].sort((a, b) => Number(b.perc) - Number(a.perc))[0];
+    qs("#grid-metrics").innerHTML = `
+      <div><span>GB carbon intensity</span><strong>${formatNumber(intensity.actual ?? intensity.forecast)} gCO₂/kWh</strong></div>
+      <div><span>Intensity index</span><strong>${escapeHtml(safeValue(intensity.index))}</strong></div>
+      <div><span>Renewable share</span><strong>${renewableShare.toFixed(1)}%</strong></div>
+      <div><span>Dominant fuel</span><strong>${escapeHtml(safeValue(dominant?.fuel))}</strong></div>`;
+    qs("#grid-period").textContent = `Grid period · ${formatDate(intensityRecord.from)} to ${formatDate(intensityRecord.to)} · National Grid ESO Carbon Intensity API`;
+    qs("#generation-chart").innerHTML = [...mix].sort((a, b) => Number(b.perc) - Number(a.perc)).map((item) => `
+      <div class="generation-row"><span>${escapeHtml(safeValue(item.fuel))}</span><div class="generation-bar"><i style="width:${Math.max(0, Math.min(100, Number(item.perc) || 0))}%"></i></div><strong>${Number(item.perc).toFixed(1)}%</strong></div>
+    `).join("");
+    gridLoaded = true;
+  } catch (error) {
+    qs("#grid-metrics").innerHTML = `<div><span>Status</span><strong>Temporarily unavailable</strong></div>`;
+    qs("#grid-period").textContent = "Live grid context could not be loaded. Project screening and forecasts remain available.";
+    qs("#generation-chart").innerHTML = "";
+    console.warn("Live grid request failed", error);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Refresh live data";
+  }
+}
+qs("#refresh-grid").addEventListener("click", refreshGrid);
+
+const offshoreProjects = data.projects
+  .filter((project) => safeValue(project.technology, "").toLowerCase().includes("wind offshore"))
+  .sort((a, b) => Number(b.capacity_mw) - Number(a.capacity_mw));
+qs("#offshore-project").innerHTML = offshoreProjects.map((project) => `<option value="${project._index}">${escapeHtml(safeValue(project.site_name))} · ${formatMw(project.capacity_mw, true)}</option>`).join("");
+const calculatorControls = {
+  factor: qs("#capacity-factor"),
+  turbine: qs("#turbine-rating"),
+  price: qs("#electricity-price"),
+  capex: qs("#capex-rate"),
+  life: qs("#project-life"),
+  carbon: qs("#grid-carbon"),
+};
+function updateOffshoreCalculator() {
+  const project = data.projects[Number(qs("#offshore-project").value)];
+  if (!project) return;
+  const capacity = Number(project.capacity_mw) || 0;
+  const factor = Number(calculatorControls.factor.value);
+  const turbine = Number(calculatorControls.turbine.value);
+  const price = Number(calculatorControls.price.value);
+  const capexRate = Number(calculatorControls.capex.value);
+  const life = Number(calculatorControls.life.value);
+  const carbon = Number(calculatorControls.carbon.value);
+  const annualEnergy = capacity * factor * 8760;
+  const turbines = capacity / turbine;
+  const revenue = annualEnergy * price;
+  const capex = capacity * capexRate * 1_000_000;
+  const payback = revenue > 0 ? capex / revenue : 0;
+  const lifetimeRevenue = revenue * life;
+  const annualCarbon = annualEnergy * carbon;
+  qs("#capacity-factor-output").textContent = `${(factor * 100).toFixed(0)}%`;
+  qs("#turbine-rating-output").textContent = `${turbine.toFixed(1)} MW`;
+  qs("#electricity-price-output").textContent = `£${formatNumber(price)}/MWh`;
+  qs("#capex-rate-output").textContent = `£${capexRate.toFixed(1)}m/MW`;
+  qs("#project-life-output").textContent = `${life} years`;
+  qs("#grid-carbon-output").textContent = `${carbon.toFixed(2)} kg/kWh`;
+  qs("#calculator-project").innerHTML = `<div><span>Selected project</span><strong>${escapeHtml(safeValue(project.site_name))}</strong></div><div><span>Reported capacity · ${escapeHtml(safeValue(project.region))}</span><strong>${formatMw(capacity)}</strong></div>`;
+  const results = [
+    ["Annual energy", `${compactFormatter.format(annualEnergy)} MWh`],
+    ["Indicative turbines", turbines.toFixed(1)],
+    ["Annual revenue", `£${compactFormatter.format(revenue)}`],
+    ["Indicative CAPEX", `£${compactFormatter.format(capex)}`],
+    ["Simple payback", `${payback.toFixed(1)} years`],
+    ["Lifetime revenue", `£${compactFormatter.format(lifetimeRevenue)}`],
+    ["Annual carbon saving", `${compactFormatter.format(annualCarbon)} tCO₂e`],
+    ["Lifetime carbon saving", `${compactFormatter.format(annualCarbon * life)} tCO₂e`],
+  ];
+  qs("#calculator-results").innerHTML = results.map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join("");
+}
+Object.values(calculatorControls).forEach((control) => control.addEventListener("input", updateOffshoreCalculator));
+qs("#offshore-project").addEventListener("change", updateOffshoreCalculator);
+updateOffshoreCalculator();
+
+qsa(".tool-tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    qsa(".tool-tab").forEach((tab) => {
+      const active = tab === button;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+    });
+    qsa(".tool-panel").forEach((panel) => {
+      const active = panel.id === `${button.dataset.tool}-panel`;
+      panel.hidden = !active;
+      panel.classList.toggle("active", active);
+    });
+    if (button.dataset.tool === "map") renderMap();
+    if (button.dataset.tool === "regional") renderRegional();
+    if (button.dataset.tool === "compare") ensureComparisonInitialised();
+    if (button.dataset.tool === "grid" && !gridLoaded) refreshGrid();
+  });
+});
+
+renderProjects();
+const mapObserver = new IntersectionObserver((entries) => {
+  if (!entries.some((entry) => entry.isIntersecting)) return;
+  renderMap();
+  mapObserver.disconnect();
+}, { rootMargin: "300px 0px" });
+mapObserver.observe(qs("#workbench"));
+
+const controls = {
+  rate: qs("#rate-slider"),
+  cost: qs("#cost-slider"),
+  grid: qs("#grid-slider"),
+  policy: qs("#policy-select"),
+  cfd: qs("#cfd-check"),
+};
+const policyShift = { restrictive: -0.34, neutral: 0, supportive: 0.27 };
+const logit = (p) => Math.log(Math.max(.0001, Math.min(.9999, p)) / (1 - Math.max(.0001, Math.min(.9999, p))));
+const sigmoid = (value) => 1 / (1 + Math.exp(-value));
+
+function updateScenario() {
+  const rate = Number(controls.rate.value);
+  const cost = Number(controls.cost.value);
+  const grid = Number(controls.grid.value);
+  const shift = (-0.18 * rate) + (-0.025 * cost) + (-0.32 * grid) + policyShift[controls.policy.value] + (controls.cfd.checked ? 0.24 : 0);
+  const scenario = data.portfolio.reduce((sum, row) => sum + row[0] * sigmoid(logit(row[2]) + shift), 0);
+  const reference = data.kpis.expected3yMw;
+  const delta = scenario / reference - 1;
+  qs("#rate-output").textContent = `${rate >= 0 ? "+" : ""}${rate.toFixed(2)} pp`;
+  qs("#cost-output").textContent = `${cost >= 0 ? "+" : ""}${cost.toFixed(0)}%`;
+  qs("#grid-output").textContent = `${grid.toFixed(1)} years`;
+  qs("#reference-value").textContent = formatMw(reference, true);
+  qs("#scenario-value").textContent = formatMw(scenario, true);
+  qs("#scenario-delta").textContent = `${delta >= 0 ? "+" : ""}${(100 * delta).toFixed(1)}% vs reference`;
+  qs("#scenario-delta").classList.toggle("negative", delta < 0);
+  qs("#scenario-bar").style.width = `${Math.min(100, Math.max(3, 100 * scenario / reference))}%`;
+  qs("#scenario-note").textContent = Math.abs(shift) > .001
+    ? `Combined assumptions shift portfolio log-odds by ${shift >= 0 ? "+" : ""}${shift.toFixed(2)}. This is a bounded stress test, not a causal forecast.`
+    : "Current-conditions reference scenario.";
+}
+
+Object.values(controls).forEach((control) => control.addEventListener("input", updateScenario));
+qs("#reset-scenario").addEventListener("click", () => {
+  controls.rate.value = 0;
+  controls.cost.value = 0;
+  controls.grid.value = 0;
+  controls.policy.value = "neutral";
+  controls.cfd.checked = false;
+  updateScenario();
+});
+
+qs("#macro-row").innerHTML = [
+  ["Bank Rate", data.macro.bank_rate_pct],
+  ["UK CPI", data.macro.cpi_annual_pct],
+  ["Infrastructure costs", data.macro.construction_opi_annual_pct],
+].map(([label, item]) => `<div class="macro-card"><strong>${item ? `${item.value.toFixed(1)}%` : "N/A"}</strong><span>${label}</span><small>${item ? formatDate(item.date, { month: "short", year: "numeric" }) : ""}</small></div>`).join("");
+updateScenario();
+
+qs("#panel-rows").textContent = formatNumber(data.kpis.panelRows);
+qs("#linked-projects").textContent = formatNumber(data.kpis.linkedProjects);
+qs("#intervals").textContent = formatNumber(data.kpis.survivalIntervals);
+
+const names = {
+  empirical_survival: "Empirical survival",
+  survival_logistic: "Survival logistic",
+  catboost_survival: "CatBoost AI",
+  historical_base_rate: "Historical base rate",
+};
+qs("#backtest-table").innerHTML = data.model.backtests.map((result) => `
+  <tr>
+    <td>${result.horizon} years</td>
+    <td>${escapeHtml(names[result.candidate] || result.candidate)}</td>
+    <td>${result.roc_auc.toFixed(3)}</td>
+    <td>${result.brier_score.toFixed(3)}</td>
+    <td><span class="model-status ${result.selected ? "selected-model" : "rejected-model"}">${result.selected ? "Deployed" : "Challenger"}</span></td>
+  </tr>
+`).join("");
+
+const qualityCards = [
+  {
+    label: "Project-snapshot duplicates",
+    value: formatNumber(data.quality.duplicateRows),
+    description: "No duplicated analytical grain detected in the packaged project panel.",
+    tone: "good",
+  },
+  {
+    label: "Fallback entity keys",
+    value: formatPercent(data.quality.fallbackKeyRate),
+    description: "Records without stable reference IDs remain more vulnerable to imperfect history matching.",
+    tone: "watch",
+  },
+  {
+    label: "Independent snapshots",
+    value: formatNumber(data.kpis.snapshots),
+    description: "Too few independent time points to claim learned political or macroeconomic causality.",
+    tone: "watch",
+  },
+];
+qs("#quality-grid").innerHTML = qualityCards.map((card) => `<article class="quality-card"><span>${card.label}</span><strong>${card.value}</strong><p>${card.description}</p><i class="${card.tone}"></i></article>`).join("");
+qs("#limitations-list").innerHTML = data.model.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+
+const navLinks = qsa(".topbar nav a");
+const sections = navLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+const observer = new IntersectionObserver((entries) => {
+  const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if (!visible) return;
+  navLinks.forEach((link) => link.classList.toggle("active", link.getAttribute("href") === `#${visible.target.id}`));
+}, { rootMargin: "-20% 0px -65% 0px", threshold: [0, .2, .5] });
+sections.forEach((section) => observer.observe(section));
+document.body.classList.remove("loading");
+})().catch((error) => {
+  console.error("Dashboard initialization failed", error);
+  document.body.classList.remove("loading");
+  document.body.classList.add("load-failed");
+  const status = document.querySelector("#hero-expected");
+  if (status) status.textContent = "Data unavailable";
+  const table = document.querySelector("#project-table");
+  if (table) {
+    table.innerHTML = `<tr><td class="empty-state" colspan="7"><strong>The data view could not be loaded.</strong><span>Please refresh the page.</span></td></tr>`;
+  }
+});
+</script>
+  </body>
+</html>
