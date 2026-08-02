@@ -4,12 +4,17 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const output = resolve(root, "dist-static");
-const [html, notFound, summary, projectIndex, projectDetails] = await Promise.all([
+const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, about, directory] = await Promise.all([
   readFile(resolve(output, "index.html"), "utf8"),
   readFile(resolve(output, "404.html"), "utf8"),
   readFile(resolve(output, "dashboard-summary.json"), "utf8").then(JSON.parse),
   readFile(resolve(output, "projects-index.json"), "utf8").then(JSON.parse),
   readFile(resolve(output, "project-details.json"), "utf8").then(JSON.parse),
+  readFile(resolve(output, "sitemap.xml"), "utf8"),
+  readFile(resolve(output, "robots.txt"), "utf8"),
+  readFile(resolve(output, "forecasting/index.html"), "utf8"),
+  readFile(resolve(output, "about/index.html"), "utf8"),
+  readFile(resolve(output, "projects/index.html"), "utf8"),
 ]);
 let sourceData;
 try {
@@ -29,9 +34,13 @@ assert.match(html, /Copy view link/);
 assert.match(html, /Copy project link/);
 assert.match(html, /Public planning timeline/);
 assert.match(html, /URLSearchParams/);
+assert.match(html, /application\/ld\+json/);
+assert.match(html, /Browse the permanent project directory/);
+assert.match(html, /Open permanent page/);
 assert.match(html, /projects-index\.json/);
 assert.match(html, /project-details\.json/);
 assert.doesNotMatch(html, /dashboard-data\.json/);
+assert.doesNotMatch(html, /__STRUCTURED_DATA__/);
 assert.equal(notFound, html);
 
 assert.equal(summary.kpis.datasetProjects, 13_009);
@@ -40,12 +49,29 @@ assert.equal(summary.projects, undefined);
 assert.equal(projectIndex.length, 13_009);
 assert.equal(Object.keys(projectDetails).length, 13_009);
 assert.equal(new Set(projectIndex.map((project) => String(project.ref_id))).size, 13_009);
+assert.equal(summary.model.rollingAudit.horizons["2"].testRows, 4_019);
+assert.equal(summary.model.rollingAudit.horizons["5"].promotionDecision, "retain published baseline");
 
 for (let index = 0; index < sourceData.projects.length; index += 1) {
   const sourceProject = sourceData.projects[index];
   const rebuiltProject = { ...projectIndex[index], ...projectDetails[String(sourceProject.ref_id)] };
   assert.deepEqual(rebuiltProject, sourceProject, `Split data changed REPD ${sourceProject.ref_id}`);
 }
+
+const forecastProject = sourceData.projects.find((project) => project.has_forecast);
+const permanentProject = await readFile(resolve(output, "projects", String(forecastProject.ref_id), "index.html"), "utf8");
+assert.match(permanentProject, new RegExp(forecastProject.site_name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.match(permanentProject, /Research-only estimate/);
+assert.match(permanentProject, /official DESNZ Renewable Energy Planning Database/);
+assert.match(forecasting, /Latest rolling-origin audit/);
+assert.match(forecasting, /0\.767/);
+assert.match(forecasting, /Scenario inputs, not fake causal precision/);
+assert.match(about, /Engineering portfolio case study/);
+assert.match(directory, /13,009 source-backed planning records/);
+assert.equal((sitemap.match(/<url>/g) || []).length, 13_039);
+assert.match(sitemap, new RegExp(`<loc>https://uk-renewable-intelligence.github.io/projects/${forecastProject.ref_id}/</loc>`));
+assert.match(robots, /Sitemap: https:\/\/uk-renewable-intelligence\.github\.io\/sitemap\.xml/);
+assert.doesNotMatch(forecasting, /\/Users\/|wenpc/);
 
 const [summarySize, indexSize, detailsSize] = await Promise.all([
   stat(resolve(output, "dashboard-summary.json")),

@@ -174,12 +174,12 @@ function syncExplorerUrl() {
   window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
-async function copyCurrentUrl(message) {
+async function copyText(value, message) {
   try {
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard.writeText(value);
   } catch {
     const input = document.createElement("textarea");
-    input.value = window.location.href;
+    input.value = value;
     input.setAttribute("readonly", "");
     input.style.position = "fixed";
     input.style.opacity = "0";
@@ -190,6 +190,9 @@ async function copyCurrentUrl(message) {
   }
   showToast(message);
 }
+const copyCurrentUrl = (message) => copyText(window.location.href, message);
+const projectPath = (project) => `./projects/${encodeURIComponent(String(project.ref_id))}/`;
+const permanentProjectUrl = (project) => new URL(projectPath(project), document.baseURI).href;
 let storedShortlist = [];
 try {
   storedShortlist = JSON.parse(localStorage.getItem("renewable-project-shortlist") || "[]");
@@ -240,7 +243,7 @@ function renderProjects(resetPage = false) {
 
   qs("#project-table").innerHTML = results.map((project) => `
     <tr>
-      <td><strong>${escapeHtml(safeValue(project.site_name, "Unnamed project"))}</strong><small>${escapeHtml(safeValue(project.operator, "Developer not reported"))}</small></td>
+      <td><a class="project-name-link" href="${projectPath(project)}">${escapeHtml(safeValue(project.site_name, "Unnamed project"))}</a><small>${escapeHtml(safeValue(project.operator, "Developer not reported"))}</small></td>
       <td>${escapeHtml(safeValue(project.technology))}</td>
       <td><span class="stage-label">${escapeHtml(safeValue(project.stage))}</span></td>
       <td class="numeric">${formatMw(project.capacity_mw)}</td>
@@ -390,13 +393,14 @@ async function openProject(project, { updateUrl = true } = {}) {
       <div class="evidence-summary">
         <span class="evidence-chip"><strong>${escapeHtml(safeValue(project.stage))}</strong> current recorded stage</span>
         ${span ? `<span class="evidence-chip"><strong>${escapeHtml(span)}</strong> public record span</span>` : ""}
-        ${project.forecast_confidence ? `<span class="evidence-chip"><strong>${escapeHtml(project.forecast_confidence)}</strong> forecast confidence</span>` : ""}
+        ${project.forecast_confidence ? `<span class="evidence-chip"><strong>${escapeHtml(project.forecast_confidence)}</strong> public-data coverage</span>` : ""}
       </div>
       ${projectTimeline(project)}
     </div>
     <div class="dialog-section"><p class="eyebrow">Time-to-operation outlook</p>${forecast}</div>
     <div class="dialog-actions">
       <button class="primary-button" type="button" data-shortlist-dialog="${project._index}">${shortlist.has(project._index) ? "Remove from shortlist" : "Add to shortlist"}</button>
+      <a class="secondary-button" href="${projectPath(project)}">Open permanent page</a>
       <button class="secondary-button" type="button" data-brief-index="${project._index}">Download project brief</button>
       <button class="secondary-button" type="button" data-copy-project-link>Copy project link</button>
     </div>
@@ -422,7 +426,11 @@ qs("#project-dialog-content").addEventListener("click", (event) => {
   }
   const briefButton = event.target.closest("[data-brief-index]");
   if (briefButton) downloadProjectBrief(data.projects[Number(briefButton.dataset.briefIndex)]);
-  if (event.target.closest("[data-copy-project-link]")) copyCurrentUrl("Project link copied");
+  if (event.target.closest("[data-copy-project-link]")) {
+    const refId = qs("#project-dialog").dataset.projectRef;
+    const project = data.projects.find((item) => String(item.ref_id) === refId);
+    if (project) copyText(permanentProjectUrl(project), "Permanent project link copied");
+  }
 });
 qs(".dialog-close").addEventListener("click", () => qs("#project-dialog").close());
 qs("#project-dialog").addEventListener("click", (event) => {
@@ -496,7 +504,8 @@ Time-to-operation outlook
 Within 2 years: ${formatPercent(project.prob_operational_2y)}
 Within 3 years: ${formatPercent(project.prob_operational_3y)}
 Within 5 years: ${formatPercent(project.prob_operational_5y)}
-Forecast confidence: ${safeValue(project.forecast_confidence)}
+Public-data coverage: ${safeValue(project.forecast_confidence)}
+Permanent page: ${permanentProjectUrl(project)}
 
 Interpretation
 --------------

@@ -10,6 +10,7 @@ A public decision-support dashboard for exploring the UK renewable project pipel
 - Maps 12,980 projects with valid coordinates.
 - Links 6,189 active projects to two-, three- and five-year operational forecasts.
 - Shows dated planning evidence and shareable URLs for every project and filter view.
+- Generates permanent HTML evidence pages for all 13,009 projects, plus a crawlable directory, XML sitemap and robots file.
 - Supports regional ranking, shortlists, side-by-side comparison, live grid context and an offshore engineering calculator.
 - Explains temporal back-tests, data quality and known model limitations in the product.
 
@@ -20,7 +21,9 @@ A public decision-support dashboard for exploring the UK renewable project pipel
 - Leaflet/OpenStreetMap geospatial workbench.
 - Summary-first loading: the overview payload is about 244 KB; the project index and evidence are loaded only when needed.
 - Integrity tests rebuild all 13,009 records from the published data shards and compare every source field.
+- Search-ready static generation adds unique titles, descriptions, canonical URLs, internal links and schema.org metadata without weakening the interactive dashboard.
 - Forecast challengers are evaluated on temporal holdouts; the simpler survival baseline remains deployed when more complex candidates are less reliable.
+- A rolling-origin calibration audit is saved in `analysis/forecast-audit.json`; the latest challenger did not clear the pre-declared promotion threshold, so production probabilities were not silently changed.
 
 ## Data flow
 
@@ -46,7 +49,7 @@ npm run build
 npm run dev
 ```
 
-Then open `http://127.0.0.1:4173/`.
+Then open `http://127.0.0.1:4173/`. The build creates the dashboard, permanent project pages, methodology and about pages in `dist-static/`.
 
 Run the data and static-build checks with:
 
@@ -55,6 +58,23 @@ npm test
 ```
 
 The build can use either `src/dashboard-data.json` from the modelling pipeline or reconstruct the source snapshot from the three published JSON files in the repository root.
+
+## Forecast audit
+
+The audit requires the modelling workspace environment because it imports the survival pipeline and historical panel:
+
+```bash
+/path/to/offshore-energy-dashboard/.venv/bin/python \
+  analysis/forecast_audit.py \
+  --project-root /path/to/offshore-energy-dashboard \
+  --output analysis/forecast-audit.json
+```
+
+The companion notebook summarises the saved result for review. Current evidence supports useful two-year ranking, but not a calibrated production upgrade across all horizons.
+
+## Publishing
+
+The GitHub Pages workflow builds and verifies the full static site before deployment. GitHub Pages must use **GitHub Actions** as its publishing source so the generated project pages in `dist-static/` are included without committing more than 13,000 generated HTML files.
 
 ## Model boundary
 

@@ -1,0 +1,309 @@
+{
+  "source": "data/processed/repd_panel.csv.gz",
+  "latest_snapshot": "2026-05-06",
+  "panel_rows": 103579,
+  "projects": 19145,
+  "snapshots": 15,
+  "method": "Rolling-origin empirical survival predictions with direct-horizon, log-odds, Platt and isotonic challengers. Calibration is trained only on earlier out-of-time cohorts and tested on the latest fully observed cohort.",
+  "promotion_rule": "A challenger must preserve positive ranking, beat the historical base-rate Brier score by at least 2%, and have at least three rolling cohorts.",
+  "horizons": {
+    "2": {
+      "status": "evaluated",
+      "rolling_cohorts": 8,
+      "calibration_cohorts": [
+        "2020-09-28",
+        "2021-03-10",
+        "2021-12-02",
+        "2022-06-11",
+        "2023-03-13",
+        "2023-06-19",
+        "2023-12-16"
+      ],
+      "test_cohort": "2024-03-27",
+      "logit_offset": -2.635,
+      "platt_slope": 0.15964919558294316,
+      "platt_intercept": -3.867308508355364,
+      "brier_skill_vs_base_rate": 0.0010876121708167652,
+      "promotion_decision": "retain published baseline",
+      "uncalibrated": {
+        "rows": 4019,
+        "events": 63,
+        "event_rate": 0.01567554117939786,
+        "mean_prediction": 0.08877618517740546,
+        "brier_score": 0.020670480399257323,
+        "log_loss": 0.1265799688064679,
+        "roc_auc": 0.766639382412891,
+        "average_precision": 0.04251251373181576
+      },
+      "direct_horizon_empirical": {
+        "rows": 4019,
+        "events": 63,
+        "event_rate": 0.01567554117939786,
+        "mean_prediction": 0.0889698885081872,
+        "brier_score": 0.020669935341498944,
+        "log_loss": 0.12696642214068554,
+        "roc_auc": 0.7659131397756271,
+        "average_precision": 0.04238126510880345
+      },
+      "calibrated": {
+        "rows": 4019,
+        "events": 63,
+        "event_rate": 0.01567554117939786,
+        "mean_prediction": 0.006981631243707835,
+        "brier_score": 0.015456689046471754,
+        "log_loss": 0.08162549513837157,
+        "roc_auc": 0.766639382412891,
+        "average_precision": 0.04251251373181576
+      },
+      "platt_calibrated": {
+        "rows": 4019,
+        "events": 63,
+        "event_rate": 0.01567554117939786,
+        "mean_prediction": 0.014143168894615792,
+        "brier_score": 0.015415661799251275,
+        "log_loss": 0.08018487127901865,
+        "roc_auc": 0.766639382412891,
+        "average_precision": 0.04251251373181576
+      },
+      "isotonic_calibrated": {
+        "rows": 4019,
+        "events": 63,
+        "event_rate": 0.01567554117939786,
+        "mean_prediction": 0.01656851601298548,
+        "brier_score": 0.015360029618765569,
+        "log_loss": 0.0780456103018331,
+        "roc_auc": 0.6360741971207087,
+        "average_precision": 0.0214937408658979
+      },
+      "historical_base_rate": {
+        "rows": 4019,
+        "events": 63,
+        "event_rate": 0.01567554117939786,
+        "mean_prediction": 0.01405451448040886,
+        "brier_score": 0.015432446315689696,
+        "log_loss": 0.08078556962008678,
+        "roc_auc": 0.5,
+        "average_precision": 0.01567554117939786
+      },
+      "calibration_bins": [
+        {
+          "mean_prediction": 0.013266,
+          "observed_rate": 0.001681,
+          "count": 1190
+        },
+        {
+          "mean_prediction": 0.014348,
+          "observed_rate": 0.010147,
+          "count": 1971
+        },
+        {
+          "mean_prediction": 0.014555,
+          "observed_rate": 0.032389,
+          "count": 247
+        },
+        {
+          "mean_prediction": 0.015023,
+          "observed_rate": 0.05401,
+          "count": 611
+        }
+      ],
+      "skipped": []
+    },
+    "3": {
+      "status": "evaluated",
+      "rolling_cohorts": 5,
+      "calibration_cohorts": [
+        "2020-09-28",
+        "2021-03-10",
+        "2021-12-02",
+        "2022-06-11"
+      ],
+      "test_cohort": "2023-03-13",
+      "logit_offset": -2.375,
+      "platt_slope": 0.014280723544821544,
+      "platt_intercept": -3.6501121379141725,
+      "brier_skill_vs_base_rate": 7.63746130304499e-05,
+      "promotion_decision": "retain published baseline",
+      "uncalibrated": {
+        "rows": 4035,
+        "events": 77,
+        "event_rate": 0.019083023543990087,
+        "mean_prediction": 0.10551568180534353,
+        "brier_score": 0.02629149821504243,
+        "log_loss": 0.1509701753122203,
+        "roc_auc": 0.6931465452182987,
+        "average_precision": 0.04737286927802645
+      },
+      "direct_horizon_empirical": {
+        "rows": 4035,
+        "events": 77,
+        "event_rate": 0.019083023543990087,
+        "mean_prediction": 0.10524436876122503,
+        "brier_score": 0.026172413527142047,
+        "log_loss": 0.15077587862703665,
+        "roc_auc": 0.7092244541713971,
+        "average_precision": 0.04790533302422816
+      },
+      "calibrated": {
+        "rows": 4035,
+        "events": 77,
+        "event_rate": 0.019083023543990087,
+        "mean_prediction": 0.01090222121518472,
+        "brier_score": 0.018753153718334085,
+        "log_loss": 0.09547829633429104,
+        "roc_auc": 0.6931465452182987,
+        "average_precision": 0.04737286927802645
+      },
+      "platt_calibrated": {
+        "rows": 4035,
+        "events": 77,
+        "event_rate": 0.019083023543990087,
+        "mean_prediction": 0.024578367678521413,
+        "brier_score": 0.018747636475308298,
+        "log_loss": 0.09510031822512349,
+        "roc_auc": 0.6931465452182987,
+        "average_precision": 0.04737286927802645
+      },
+      "isotonic_calibrated": {
+        "rows": 4035,
+        "events": 77,
+        "event_rate": 0.019083023543990087,
+        "mean_prediction": 0.02846616311668358,
+        "brier_score": 0.018755163246356954,
+        "log_loss": 0.09495441789636647,
+        "roc_auc": 0.5794330732430784,
+        "average_precision": 0.022632347337575486
+      },
+      "historical_base_rate": {
+        "rows": 4035,
+        "events": 77,
+        "event_rate": 0.019083023543990087,
+        "mean_prediction": 0.02457908320019664,
+        "brier_score": 0.01874906842815418,
+        "log_loss": 0.09513029142134519,
+        "roc_auc": 0.5,
+        "average_precision": 0.019083023543990087
+      },
+      "calibration_bins": [
+        {
+          "mean_prediction": 0.024414,
+          "observed_rate": 0.004667,
+          "count": 857
+        },
+        {
+          "mean_prediction": 0.024619,
+          "observed_rate": 0.012692,
+          "count": 2600
+        },
+        {
+          "mean_prediction": 0.024638,
+          "observed_rate": 0.069204,
+          "count": 578
+        }
+      ],
+      "skipped": []
+    },
+    "5": {
+      "status": "evaluated",
+      "rolling_cohorts": 2,
+      "calibration_cohorts": [
+        "2020-09-28"
+      ],
+      "test_cohort": "2021-03-10",
+      "logit_offset": -2.15,
+      "platt_slope": -0.5356237860120099,
+      "platt_intercept": -3.885604666643357,
+      "brier_skill_vs_base_rate": 0.006156731763399481,
+      "promotion_decision": "retain published baseline",
+      "uncalibrated": {
+        "rows": 1222,
+        "events": 89,
+        "event_rate": 0.07283142389525368,
+        "mean_prediction": 0.09848845561173887,
+        "brier_score": 0.07118389621957369,
+        "log_loss": 0.27848518446492915,
+        "roc_auc": 0.5190852564038994,
+        "average_precision": 0.08290630052207487
+      },
+      "direct_horizon_empirical": {
+        "rows": 1222,
+        "events": 89,
+        "event_rate": 0.07283142389525368,
+        "mean_prediction": 0.0908869302642537,
+        "brier_score": 0.06939057755638242,
+        "log_loss": 0.271969258958336,
+        "roc_auc": 0.522526453583506,
+        "average_precision": 0.08358053636888839
+      },
+      "calibrated": {
+        "rows": 1222,
+        "events": 89,
+        "event_rate": 0.07283142389525368,
+        "mean_prediction": 0.013139214636113257,
+        "brier_score": 0.07102835957425792,
+        "log_loss": 0.34209370348638174,
+        "roc_auc": 0.5190852564038994,
+        "average_precision": 0.08290630052207487
+      },
+      "platt_calibrated": {
+        "rows": 1222,
+        "events": 89,
+        "event_rate": 0.07283142389525368,
+        "mean_prediction": 0.07393280077847475,
+        "brier_score": 0.06836423625456721,
+        "log_loss": 0.26793838098243145,
+        "roc_auc": 0.48091474359610065,
+        "average_precision": 0.0825208112608797
+      },
+      "isotonic_calibrated": {
+        "rows": 1222,
+        "events": 89,
+        "event_rate": 0.07283142389525368,
+        "mean_prediction": 0.01160060609372249,
+        "brier_score": 0.07124697006345569,
+        "log_loss": 0.352284792347582,
+        "roc_auc": 0.5191596338645537,
+        "average_precision": 0.0760102826071597
+      },
+      "historical_base_rate": {
+        "rows": 1222,
+        "events": 89,
+        "event_rate": 0.07283142389525368,
+        "mean_prediction": 0.0373245744998507,
+        "brier_score": 0.0687877439426314,
+        "log_loss": 0.27474578471830385,
+        "roc_auc": 0.5,
+        "average_precision": 0.07283142389525368
+      },
+      "calibration_bins": [
+        {
+          "mean_prediction": 0.047372,
+          "observed_rate": 0.096413,
+          "count": 446
+        },
+        {
+          "mean_prediction": 0.060152,
+          "observed_rate": 0.014286,
+          "count": 70
+        },
+        {
+          "mean_prediction": 0.074949,
+          "observed_rate": 0.047297,
+          "count": 296
+        },
+        {
+          "mean_prediction": 0.089968,
+          "observed_rate": 0.090361,
+          "count": 166
+        },
+        {
+          "mean_prediction": 0.114293,
+          "observed_rate": 0.065574,
+          "count": 244
+        }
+      ],
+      "skipped": []
+    }
+  },
+  "overall_decision": "Retain the published research baseline. The two-year model ranks projects usefully, but no calibration challenger clears the pre-declared promotion threshold across horizons."
+}

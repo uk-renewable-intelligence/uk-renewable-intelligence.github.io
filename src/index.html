@@ -18,6 +18,7 @@
     <meta name="twitter:description" content="13,000+ projects. Transparent forecasts. Decision-ready scenarios.">
     <meta name="twitter:image" content="__ORIGIN__/og.png">
     <title>UK Renewable Infrastructure Intelligence</title>
+    <script type="application/ld+json">__STRUCTURED_DATA__</script>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -48,10 +49,10 @@
         <div class="hero-copy">
           <p class="eyebrow">UK Renewable Intelligence · Data snapshot <span id="snapshot-date"></span></p>
           <h1>UK Renewable Infrastructure Intelligence</h1>
-          <p class="hero-lede">Search more than 13,000 UK planning records, compare development risk and explore probability-weighted capacity forecasts.</p>
+          <p class="hero-lede">Assess which UK renewable projects are most likely to reach operation. Search 13,000+ planning records, compare delivery risk and inspect probability-weighted capacity forecasts.</p>
           <div class="hero-actions">
             <a class="primary-button" href="#projects">Open Project Explorer</a>
-            <a class="secondary-button" href="#scenario">Open Scenario Lab</a>
+            <a class="secondary-button" href="./forecasting/">Review Forecast Evidence</a>
           </div>
           <div class="hero-proof" aria-label="Platform capabilities">
             <span>13,009 planning records</span>
@@ -77,7 +78,7 @@
       <section class="notice" aria-label="Model notice">
         <span class="notice-icon" aria-hidden="true">i</span>
         <div><strong>Model governance active.</strong><span>Forecast candidates are tested on temporal holdouts; unreliable challengers are rejected automatically.</span></div>
-        <a href="#trust">Review validation</a>
+        <a href="./forecasting/">Review validation</a>
       </section>
 
       <section class="metric-grid" aria-label="Portfolio metrics">
@@ -106,7 +107,7 @@
       <section class="section-block" id="projects">
         <div class="section-intro">
           <div><p class="eyebrow">Project explorer</p><h2>UK renewable project register</h2></div>
-          <p>Search all <strong id="explorer-total"></strong> REPD records. Open a row to inspect planning evidence, screening risk and available forecast horizons.</p>
+          <p>Search all <strong id="explorer-total"></strong> REPD records. Open a row to inspect planning evidence, screening risk and available forecast horizons. <a class="inline-link" href="./projects/">Browse the permanent project directory.</a></p>
         </div>
         <div class="coverage-strip" aria-label="Explorer data coverage">
           <div><span>Dataset coverage</span><strong id="coverage-records"></strong><small>current REPD records</small></div>
@@ -336,7 +337,7 @@
         <div class="quality-grid" id="quality-grid"></div>
         <div class="methodology-footer">
           <div><p class="eyebrow">Known limitations</p><ul id="limitations-list"></ul></div>
-          <div><p class="eyebrow">Source stack</p><p>UK Renewable Energy Planning Database · Office for National Statistics · Bank of England</p></div>
+          <div><p class="eyebrow">Source stack</p><p>UK Renewable Energy Planning Database · Office for National Statistics · Bank of England</p><a class="inline-link" href="./forecasting/">Open the rolling-origin forecast audit →</a></div>
         </div>
       </section>
     </main>
@@ -349,6 +350,9 @@
     <footer>
       <div><strong>UK Renewable Infrastructure Intelligence</strong><p>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</p></div>
       <div class="footer-links">
+        <a href="./projects/">Project directory</a>
+        <a href="./forecasting/">Forecast methodology</a>
+        <a href="./about/">About this project</a>
         <a href="https://github.com/uk-renewable-intelligence/uk-renewable-intelligence.github.io" target="_blank" rel="noreferrer">View source code ↗</a>
         <a href="https://uk-renewable-project-screening.streamlit.app/" target="_blank" rel="noreferrer">Open modelling workspace ↗</a>
         <span>Model v2.0 · Research only · Not investment advice</span>
