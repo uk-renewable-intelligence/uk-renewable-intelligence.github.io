@@ -1,0 +1,12 @@
+{
+  "name": "uk-renewable-infrastructure-forecasting-site",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-static.mjs",
+    "build:static": "node scripts/build-static.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test": "node scripts/build-static.mjs && node scripts/smoke-test.mjs"
+  }
+}

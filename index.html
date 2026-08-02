@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <meta name="description" content="Explore 13,000+ UK renewable projects, transparent time-to-operation forecasts and economic scenarios.">
+    <meta name="description" content="See which UK renewable projects are most likely to reach operation, with 13,000+ planning records, transparent forecasts and scenario analysis.">
     <meta name="theme-color" content="#102b21">
     <link rel="canonical" href="https://uk-renewable-intelligence.github.io/">
     <meta property="og:title" content="UK Renewable Infrastructure Intelligence">
@@ -124,8 +124,10 @@ h4 { font-size: 13px; font-weight: 760; }
 .loading .big-number, .loading .metric strong { color: #aab7be; }
 .big-number { margin: auto 0 2px; font-size: clamp(44px, 4vw, 58px); font-weight: 700; letter-spacing: -.05em; }
 .big-number-label { max-width: 290px; margin: 0; color: #b9cbd2; font-size: 12px; line-height: 1.45; }
-.confidence-row { display: flex; justify-content: space-between; margin-top: 22px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); font-size: 11px; }
-.confidence-row span { color: #aebfc7; }
+.hero-panel-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); }
+.hero-panel-metrics span, .hero-panel-metrics strong { display: block; }
+.hero-panel-metrics span { color: #aebfc7; font-size: 8px; text-transform: uppercase; letter-spacing: .05em; }
+.hero-panel-metrics strong { margin-top: 5px; color: white; font-size: 13px; }
 .fine-print { margin: 13px 0 0; color: #91a7b0; font-size: 9px; line-height: 1.5; }
 
 .notice { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 11px 14px; border: 1px solid #d7e3e6; border-radius: 7px; background: #edf5f6; color: #365663; }
@@ -391,6 +393,18 @@ dialog::backdrop { background: rgba(6, 21, 30, .62); }
 .project-facts span, .forecast-grid span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .05em; }
 .project-facts strong { font-size: 10px; line-height: 1.4; }
 .dialog-section { margin-top: 23px; }
+.evidence-summary { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.evidence-chip { border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; background: #f7f9fa; color: var(--muted); font-size: 9px; }
+.evidence-chip strong { color: var(--ink); }
+.project-timeline { position: relative; display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.project-timeline::before { position: absolute; top: 13px; bottom: 13px; left: 5px; width: 1px; background: var(--line-strong); content: ""; }
+.project-timeline li { position: relative; display: grid; grid-template-columns: 12px 1fr auto; gap: 9px; align-items: center; min-height: 37px; color: var(--muted); font-size: 9px; }
+.project-timeline li::before { z-index: 1; width: 9px; height: 9px; border: 2px solid white; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 1px var(--teal); content: ""; }
+.project-timeline strong { color: var(--ink); font-size: 10px; }
+.project-timeline time { white-space: nowrap; font-weight: 700; }
+.project-timeline-empty { margin: 0; padding: 14px; border-radius: 5px; background: var(--soft); color: var(--muted); font-size: 9px; line-height: 1.5; }
+.dialog-loading { min-height: 280px; display: grid; place-content: center; gap: 8px; color: var(--muted); text-align: center; }
+.dialog-loading strong { color: var(--ink); font-size: 16px; }
 .forecast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .forecast-grid > div { padding: 14px; border-radius: 5px; background: var(--soft); }
 .forecast-grid strong { font-size: 21px; font-weight: 700; }
@@ -401,6 +415,9 @@ dialog::backdrop { background: rgba(6, 21, 30, .62); }
 .forecast-unavailable { padding: 16px; border-radius: 5px; background: #f8f2e6; }
 .forecast-unavailable p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 .dialog-disclaimer { margin: 18px 0 0; color: #8a99a2; font-size: 8px; line-height: 1.5; }
+
+.toast { position: fixed; z-index: 100; right: 22px; bottom: 22px; max-width: min(360px, calc(100vw - 44px)); padding: 11px 14px; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; background: var(--navy); color: white; box-shadow: 0 14px 36px rgba(8,27,38,.25); font-size: 10px; font-weight: 700; }
+.toast[hidden] { display: none; }
 
 footer { display: flex; justify-content: space-between; gap: 25px; width: min(1560px, 95vw); margin: 58px auto 0; padding: 26px 0 34px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; }
 footer strong { color: var(--ink); }
@@ -452,6 +469,8 @@ footer p { margin: 5px 0 0; }
   .inline-tools select, .answer-control select, .wide-select select { width: 100%; min-width: 0; }
   #project-map { min-height: 390px; }
   .macro-row, .quality-grid, .project-facts, .forecast-grid, .factor-grid { grid-template-columns: 1fr; }
+  .project-timeline li { grid-template-columns: 12px 1fr; }
+  .project-timeline time { grid-column: 2; padding-bottom: 7px; }
   .project-facts > div { border-right: 0; border-bottom: 1px solid var(--line) !important; }
   .project-facts > div:last-child { border-bottom: 0 !important; }
   .trust-stats { grid-template-columns: 1fr 1fr; }
@@ -485,17 +504,17 @@ footer p { margin: 5px 0 0; }
     <main id="main-content">
       <section class="hero" id="overview">
         <div class="hero-copy">
-          <p class="eyebrow">Portfolio overview · Data snapshot <span id="snapshot-date"></span></p>
-          <h1>UK Renewable Infrastructure Intelligence</h1>
-          <p class="hero-lede">Project pipeline screening and time-to-operation forecasting across the complete Renewable Energy Planning Database.</p>
+          <p class="eyebrow">UK Renewable Intelligence · Data snapshot <span id="snapshot-date"></span></p>
+          <h1>See which projects are most likely to reach operation</h1>
+          <p class="hero-lede">Search more than 13,000 UK planning records, compare development risk and explore probability-weighted capacity forecasts.</p>
           <div class="hero-actions">
             <a class="primary-button" href="#projects">Open Project Explorer</a>
             <a class="secondary-button" href="#scenario">Open Scenario Lab</a>
           </div>
           <div class="hero-proof" aria-label="Platform capabilities">
-            <span>13,000+ planning records</span>
+            <span>13,009 planning records</span>
+            <span>6,189 linked forecasts</span>
             <span>15 historical snapshots</span>
-            <span>Temporal model testing</span>
           </div>
         </div>
         <aside class="hero-panel">
@@ -505,11 +524,11 @@ footer p { margin: 5px 0 0; }
           </div>
           <p class="big-number" id="hero-expected">Loading…</p>
           <p class="big-number-label">risk-adjusted capacity expected within three years</p>
-          <div class="confidence-row">
-            <span>Forecast status</span>
-            <strong>Research-only</strong>
+          <div class="hero-panel-metrics">
+            <div><span>Active pipeline</span><strong id="hero-active">—</strong></div>
+            <div><span>Source updated</span><strong id="hero-updated">—</strong></div>
           </div>
-          <p class="fine-print">Selected model: empirical survival baseline. The AI challenger remains undeployed because corrected temporal tests did not improve reliability.</p>
+          <p class="fine-print">Forecasts use a transparent survival baseline selected through temporal back-testing. Research only.</p>
         </aside>
       </section>
 
@@ -587,6 +606,7 @@ footer p { margin: 5px 0 0; }
                   <option value="name">Project name A–Z</option>
                 </select>
               </label>
+              <button id="copy-explorer-link" class="text-button" type="button">Copy view link</button>
               <button id="export-projects" class="text-button" type="button">Export filtered CSV</button>
             </div>
           </div>
@@ -797,12 +817,13 @@ footer p { margin: 5px 0 0; }
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script>window.DASHBOARD_DATA=null;</script>
+    <script>window.DASHBOARD_SUMMARY=null;</script>
     <script>(async () => {
-const data = window.DASHBOARD_DATA || await fetch("./dashboard-data.json?v=20260730-map-workbench").then((response) => {
+const summary = window.DASHBOARD_SUMMARY || await fetch("./dashboard-summary.json?v=20260802-dashboard-v3").then((response) => {
   if (!response.ok) throw new Error(`Dashboard data request failed (${response.status})`);
   return response.json();
 });
+const data = { ...summary, projects: [] };
 const qs = (selector) => document.querySelector(selector);
 const qsa = (selector) => [...document.querySelectorAll(selector)];
 const numberFormatter = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
@@ -818,6 +839,14 @@ const formatDate = (value, options = { day: "2-digit", month: "short", year: "nu
     : new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T12:00:00` : value);
   return Number.isNaN(date.valueOf()) ? String(value) : date.toLocaleDateString("en-GB", options);
 };
+const parseDate = (value) => {
+  if (!value) return null;
+  const parts = String(value).split("/");
+  const date = parts.length === 3
+    ? new Date(`${parts[2]}-${parts[1]}-${parts[0]}T12:00:00`)
+    : new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T12:00:00` : value);
+  return Number.isNaN(date.valueOf()) ? null : date;
+};
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
 }[character]));
@@ -830,9 +859,20 @@ const downloadText = (filename, content, type = "text/plain;charset=utf-8") => {
   link.click();
   URL.revokeObjectURL(link.href);
 };
+let toastTimer;
+const showToast = (message) => {
+  const toast = qs("#toast");
+  if (!toast) return;
+  window.clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.hidden = false;
+  toastTimer = window.setTimeout(() => { toast.hidden = true; }, 2600);
+};
 
 qs("#snapshot-date").textContent = formatDate(data.latestSnapshot);
 qs("#hero-expected").textContent = formatMw(data.kpis.expected3yMw, true);
+qs("#hero-active").textContent = formatNumber(data.kpis.activeProjects);
+qs("#hero-updated").textContent = formatDate(data.dataset.latestRecordUpdate, { month: "short", year: "numeric" });
 qs("#kpi-records").textContent = formatNumber(data.kpis.datasetProjects);
 qs("#kpi-projects").textContent = formatNumber(data.kpis.activeProjects);
 qs("#kpi-capacity").textContent = formatMw(data.kpis.pipelineCapacityMw, true);
@@ -861,6 +901,36 @@ qs("#tech-chart").innerHTML = data.groups.technology.slice(0, 7).map((item) => `
   </div>
 `).join("");
 
+document.body.classList.remove("loading");
+
+const waitForProjectDemand = () => new Promise((resolve) => {
+  let settled = false;
+  const triggers = qsa('a[href="#projects"], a[href="#workbench"], a[href="#scenario"], a[href="#trust"]');
+  const trigger = () => {
+    if (settled) return;
+    settled = true;
+    observer.disconnect();
+    triggers.forEach((link) => link.removeEventListener("click", trigger));
+    resolve();
+  };
+  const params = new URLSearchParams(window.location.search);
+  const needsProjectsNow = params.has("project") || [...params.keys()].some((key) => ["q", "technology", "stage", "region", "coverage", "sort"].includes(key))
+    || ["#projects", "#workbench", "#scenario", "#trust"].includes(window.location.hash);
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) trigger();
+  }, { rootMargin: "0px" });
+  observer.observe(qs("#projects"));
+  triggers.forEach((link) => link.addEventListener("click", trigger));
+  if (needsProjectsNow) trigger();
+  else window.setTimeout(trigger, 12000);
+});
+
+await waitForProjectDemand();
+data.projects = await fetch("./projects-index.json?v=20260802-dashboard-v3").then((response) => {
+  if (!response.ok) throw new Error(`Project register request failed (${response.status})`);
+  return response.json();
+});
+
 data.projects.forEach((project, index) => {
   project._index = index;
   project._search = [
@@ -886,12 +956,60 @@ populateSelect("#technology-filter", data.projects.map((project) => project.tech
 populateSelect("#stage-filter", data.projects.map((project) => project.stage));
 populateSelect("#region-filter", data.projects.map((project) => project.region));
 
+const validCoverage = new Set(["all", "forecast", "unforecast"]);
+const validSort = new Set(["capacity", "probability", "score", "name"]);
+const applyExplorerStateFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  qs("#project-search").value = params.get("q") || "";
+  qs("#technology-filter").value = params.get("technology") || "";
+  qs("#stage-filter").value = params.get("stage") || "";
+  qs("#region-filter").value = params.get("region") || "";
+  qs("#project-sort").value = validSort.has(params.get("sort")) ? params.get("sort") : "capacity";
+  return validCoverage.has(params.get("coverage")) ? params.get("coverage") : "all";
+};
+const initialCoverage = applyExplorerStateFromUrl();
+
 const projectState = {
   page: 1,
   pageSize: 25,
-  coverage: "all",
+  coverage: initialCoverage,
   filtered: data.projects,
 };
+qsa(".filter-chip").forEach((button) => button.classList.toggle("active", button.dataset.coverage === projectState.coverage));
+
+function syncExplorerUrl() {
+  const url = new URL(window.location.href);
+  const values = {
+    q: qs("#project-search").value.trim(),
+    technology: qs("#technology-filter").value,
+    stage: qs("#stage-filter").value,
+    region: qs("#region-filter").value,
+    coverage: projectState.coverage === "all" ? "" : projectState.coverage,
+    sort: qs("#project-sort").value === "capacity" ? "" : qs("#project-sort").value,
+  };
+  Object.entries(values).forEach(([key, value]) => {
+    if (value) url.searchParams.set(key, value);
+    else url.searchParams.delete(key);
+  });
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+async function copyCurrentUrl(message) {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+  } catch {
+    const input = document.createElement("textarea");
+    input.value = window.location.href;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand("copy");
+    input.remove();
+  }
+  showToast(message);
+}
 let storedShortlist = [];
 try {
   storedShortlist = JSON.parse(localStorage.getItem("renewable-project-shortlist") || "[]");
@@ -933,6 +1051,7 @@ function getFilteredProjects() {
 
 function renderProjects(resetPage = false) {
   if (resetPage) projectState.page = 1;
+  syncExplorerUrl();
   projectState.filtered = getFilteredProjects();
   const pageCount = Math.max(1, Math.ceil(projectState.filtered.length / projectState.pageSize));
   projectState.page = Math.min(projectState.page, pageCount);
@@ -977,6 +1096,10 @@ qsa(".filter-chip").forEach((button) => {
     renderProjects(true);
   });
 });
+qs("#copy-explorer-link").addEventListener("click", () => {
+  syncExplorerUrl();
+  copyCurrentUrl("Explorer view link copied");
+});
 qs("#previous-page").addEventListener("click", () => {
   projectState.page -= 1;
   renderProjects();
@@ -993,8 +1116,66 @@ function factorList(value, emptyText) {
   return factors.length ? `<ul>${factors.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${emptyText}</p>`;
 }
 
-function openProject(project) {
+let projectDetailsPromise;
+const loadProjectDetails = () => {
+  if (!projectDetailsPromise) {
+    projectDetailsPromise = fetch("./project-details.json?v=20260802-dashboard-v3").then((response) => {
+      if (!response.ok) throw new Error(`Project evidence request failed (${response.status})`);
+      return response.json();
+    });
+  }
+  return projectDetailsPromise;
+};
+
+function updateProjectUrl(refId) {
+  const url = new URL(window.location.href);
+  if (refId === null) url.searchParams.delete("project");
+  else url.searchParams.set("project", String(refId));
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function projectTimeline(project) {
+  const milestones = [
+    ["Planning submitted", project.planning_submitted],
+    ["Planning granted", project.planning_granted],
+    ["Construction started", project.under_construction],
+    ["Became operational", project.operational],
+    ["Latest public record", project.record_updated],
+  ].filter(([, date]) => parseDate(date)).sort((a, b) => parseDate(a[1]) - parseDate(b[1]));
+  if (!milestones.length) {
+    return `<p class="project-timeline-empty">No dated planning milestones are available in the current public record.</p>`;
+  }
+  return `<ol class="project-timeline">${milestones.map(([label, date]) => `
+    <li><strong>${escapeHtml(label)}</strong><time datetime="${parseDate(date).toISOString().slice(0, 10)}">${escapeHtml(formatDate(date))}</time></li>
+  `).join("")}</ol>`;
+}
+
+function evidenceSpan(project) {
+  const dates = [project.planning_submitted, project.planning_granted, project.under_construction, project.operational, project.record_updated]
+    .map(parseDate).filter(Boolean).sort((a, b) => a - b);
+  if (dates.length < 2) return null;
+  const months = Math.max(0, Math.round((dates.at(-1) - dates[0]) / (1000 * 60 * 60 * 24 * 30.44)));
+  return months >= 24 ? `${(months / 12).toFixed(1)} years` : `${months} months`;
+}
+
+async function openProject(project, { updateUrl = true } = {}) {
   const dialog = qs("#project-dialog");
+  const requestedRef = String(project.ref_id);
+  dialog.dataset.projectRef = requestedRef;
+  qs("#project-dialog-content").innerHTML = `<div class="dialog-loading"><strong>${escapeHtml(safeValue(project.site_name, "Project evidence"))}</strong><span>Loading planning milestones and forecast evidence…</span></div>`;
+  if (!dialog.open) dialog.showModal();
+  if (updateUrl) updateProjectUrl(project.ref_id);
+
+  let evidenceAvailable = true;
+  try {
+    const details = await loadProjectDetails();
+    Object.assign(project, details[requestedRef] || {});
+  } catch (error) {
+    evidenceAvailable = false;
+    console.warn("Project evidence could not be loaded", error);
+  }
+  if (dialog.dataset.projectRef !== requestedRef) return;
+
   const forecast = project.has_forecast ? `
     <div class="forecast-grid">
       <div><span>Within 2 years</span><strong>${formatPercent(project.prob_operational_2y)}</strong></div>
@@ -1006,6 +1187,7 @@ function openProject(project) {
       <div><h4>Risks and constraints</h4>${factorList(project.risk_factors, "No additional risk factors recorded.")}</div>
     </div>
   ` : `<div class="forecast-unavailable"><strong>No forward forecast for this record</strong><p>The project remains available for planning-data screening but is outside the current active forecast universe.</p></div>`;
+  const span = evidenceSpan(project);
 
   qs("#project-dialog-content").innerHTML = `
     <p class="eyebrow">REPD ${escapeHtml(String(project.ref_id).padStart(5, "0"))}</p>
@@ -1022,14 +1204,24 @@ function openProject(project) {
       <div><span>Record updated</span><strong>${escapeHtml(formatDate(project.record_updated))}</strong></div>
       <div><span>CfD round</span><strong>${escapeHtml(safeValue(project.cfd_round))}</strong></div>
     </div>
+    <div class="dialog-section">
+      <p class="eyebrow">Public planning timeline</p>
+      ${evidenceAvailable ? "" : `<p class="project-timeline-empty">Detailed planning evidence is temporarily unavailable. The summary record remains visible.</p>`}
+      <div class="evidence-summary">
+        <span class="evidence-chip"><strong>${escapeHtml(safeValue(project.stage))}</strong> current recorded stage</span>
+        ${span ? `<span class="evidence-chip"><strong>${escapeHtml(span)}</strong> public record span</span>` : ""}
+        ${project.forecast_confidence ? `<span class="evidence-chip"><strong>${escapeHtml(project.forecast_confidence)}</strong> forecast confidence</span>` : ""}
+      </div>
+      ${projectTimeline(project)}
+    </div>
     <div class="dialog-section"><p class="eyebrow">Time-to-operation outlook</p>${forecast}</div>
     <div class="dialog-actions">
       <button class="primary-button" type="button" data-shortlist-dialog="${project._index}">${shortlist.has(project._index) ? "Remove from shortlist" : "Add to shortlist"}</button>
       <button class="secondary-button" type="button" data-brief-index="${project._index}">Download project brief</button>
+      <button class="secondary-button" type="button" data-copy-project-link>Copy project link</button>
     </div>
     <p class="dialog-disclaimer">Screening scores are transparent heuristics. Forecasts are research estimates based on public data and are not investment advice.</p>
   `;
-  dialog.showModal();
 }
 
 qs("#project-table").addEventListener("click", (event) => {
@@ -1046,14 +1238,19 @@ qs("#project-dialog-content").addEventListener("click", (event) => {
   if (shortlistButton) {
     const index = Number(shortlistButton.dataset.shortlistDialog);
     toggleShortlist(index);
-    openProject(data.projects[index]);
+    openProject(data.projects[index], { updateUrl: false });
   }
   const briefButton = event.target.closest("[data-brief-index]");
   if (briefButton) downloadProjectBrief(data.projects[Number(briefButton.dataset.briefIndex)]);
+  if (event.target.closest("[data-copy-project-link]")) copyCurrentUrl("Project link copied");
 });
 qs(".dialog-close").addEventListener("click", () => qs("#project-dialog").close());
 qs("#project-dialog").addEventListener("click", (event) => {
   if (event.target === qs("#project-dialog")) qs("#project-dialog").close();
+});
+qs("#project-dialog").addEventListener("close", () => {
+  qs("#project-dialog").dataset.projectRef = "";
+  updateProjectUrl(null);
 });
 
 qs("#export-projects").addEventListener("click", () => {
@@ -1459,7 +1656,29 @@ qsa(".tool-tab").forEach((button) => {
   });
 });
 
+async function openProjectFromUrl() {
+  const refId = new URLSearchParams(window.location.search).get("project");
+  if (!refId) {
+    if (qs("#project-dialog").open) qs("#project-dialog").close();
+    return;
+  }
+  const project = data.projects.find((item) => String(item.ref_id) === refId);
+  if (!project) {
+    updateProjectUrl(null);
+    showToast("That project is not present in this data snapshot");
+    return;
+  }
+  await openProject(project, { updateUrl: false });
+}
+
 renderProjects();
+await openProjectFromUrl();
+window.addEventListener("popstate", async () => {
+  projectState.coverage = applyExplorerStateFromUrl();
+  qsa(".filter-chip").forEach((button) => button.classList.toggle("active", button.dataset.coverage === projectState.coverage));
+  renderProjects(true);
+  await openProjectFromUrl();
+});
 const mapObserver = new IntersectionObserver((entries) => {
   if (!entries.some((entry) => entry.isIntersecting)) return;
   renderMap();
@@ -1573,12 +1792,13 @@ document.body.classList.remove("loading");
   document.body.classList.remove("loading");
   document.body.classList.add("load-failed");
   const status = document.querySelector("#hero-expected");
-  if (status) status.textContent = "Data unavailable";
+  if (status && status.textContent === "Loading…") status.textContent = "Data unavailable";
   const table = document.querySelector("#project-table");
   if (table) {
     table.innerHTML = `<tr><td class="empty-state" colspan="7"><strong>The data view could not be loaded.</strong><span>Please refresh the page.</span></td></tr>`;
   }
 });
 </script>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   </body>
 </html>
