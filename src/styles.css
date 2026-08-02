@@ -16,6 +16,7 @@
   --soft: #eef3f6;
   --radius: 10px;
   --shadow: 0 3px 12px rgba(18, 42, 55, .055);
+  --page-width: min(1560px, 95vw);
 }
 
 * { box-sizing: border-box; }
@@ -39,14 +40,18 @@ button, input, select { font: inherit; }
   position: sticky;
   z-index: 30;
   top: 0;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
   min-height: 62px;
-  padding: 0 2.5vw;
   border-bottom: 1px solid rgba(255, 255, 255, .1);
   background: var(--navy);
   color: white;
+}
+.topbar-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: var(--page-width);
+  min-height: 62px;
+  margin: 0 auto;
 }
 .brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 720; text-decoration: none; }
 .brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; background: rgba(255,255,255,.08); font-size: 11px; letter-spacing: .08em; }
@@ -65,12 +70,12 @@ button, input, select { font: inherit; }
   box-shadow: 0 2px 8px rgba(18, 42, 55, .035);
   backdrop-filter: blur(12px);
 }
-.section-nav > div { display: flex; align-items: center; gap: 2px; width: min(1560px, 95vw); min-height: 42px; margin: 0 auto; overflow-x: auto; }
+.section-nav > div { display: flex; align-items: center; gap: 2px; width: var(--page-width); min-height: 42px; margin: 0 auto; overflow-x: auto; }
 .section-nav span { margin-right: 9px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .section-nav a { display: grid; place-items: center; min-height: 42px; padding: 0 12px; border-bottom: 2px solid transparent; color: var(--muted); font-size: 10px; font-weight: 700; text-decoration: none; white-space: nowrap; }
 .section-nav a:hover, .section-nav a.active { border-bottom-color: var(--teal); color: var(--teal); }
 
-main { width: min(1560px, 95vw); margin: 0 auto; }
+main { width: var(--page-width); margin: 0 auto; }
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 390px;
@@ -425,17 +430,17 @@ dialog::backdrop { background: rgba(6, 21, 30, .62); }
 .toast[hidden] { display: none; }
 
 .site-footer { margin-top: 64px; background: var(--navy); color: #afc0c8; }
-.footer-grid { display: grid; grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, .65fr)); gap: 42px; width: min(1560px, 95vw); margin: 0 auto; padding: 38px 0 30px; }
+.footer-grid { display: grid; grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(130px, .65fr)); gap: 42px; width: var(--page-width); margin: 0 auto; padding: 38px 0 30px; }
 .footer-brand .brand { color: white; }
 .footer-brand p { max-width: 420px; margin: 14px 0 0; color: #9fb2bb; font-size: 10px; line-height: 1.6; }
 .footer-column { display: grid; align-content: start; gap: 9px; }
 .footer-column strong { margin-bottom: 3px; color: white; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
 .footer-column a { color: #b7c7ce; font-size: 10px; text-decoration: none; }
 .footer-column a:hover { color: white; }
-.footer-bottom { display: flex; justify-content: space-between; gap: 24px; width: min(1560px, 95vw); margin: 0 auto; padding: 16px 0 22px; border-top: 1px solid rgba(255,255,255,.1); color: #8da3ad; font-size: 8px; line-height: 1.5; }
+.footer-bottom { display: flex; justify-content: space-between; gap: 24px; width: var(--page-width); margin: 0 auto; padding: 16px 0 22px; border-top: 1px solid rgba(255,255,255,.1); color: #8da3ad; font-size: 8px; line-height: 1.5; }
 
 @media (max-width: 1050px) {
-  .topbar { grid-template-columns: 1fr auto; }
+  .topbar-inner { grid-template-columns: 1fr auto; }
   .status-pill { display: none; }
   .hero { grid-template-columns: 1fr 340px; }
   .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -460,7 +465,7 @@ dialog::backdrop { background: rgba(6, 21, 30, .62); }
 }
 @media (max-width: 590px) {
   main { width: min(94vw, 560px); }
-  .topbar { display: flex; justify-content: space-between; padding: 0 3vw; }
+  .topbar-inner { display: flex; justify-content: space-between; width: min(94vw, 560px); }
   .brand > span:last-child { display: none; }
   .topbar nav a { padding: 3px 9px 0; font-size: 10px; white-space: nowrap; }
   .section-nav > div, .footer-grid, .footer-bottom { width: min(94vw, 560px); }
