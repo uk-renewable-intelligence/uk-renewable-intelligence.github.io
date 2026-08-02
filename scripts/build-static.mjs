@@ -1,4 +1,5 @@
 import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -14,6 +15,7 @@ const [template, styles, app, contentStyles, forecastAudit] = await Promise.all(
   readFile(resolve(root, "src/content.css"), "utf8"),
   readFile(resolve(root, "analysis/forecast-audit.json"), "utf8").then(JSON.parse),
 ]);
+const contentAssetName = `content.${createHash("sha256").update(contentStyles).digest("hex").slice(0, 10)}.css`;
 
 let sourceData;
 try {
@@ -141,7 +143,7 @@ function pageShell({ title, description, canonicalPath, body, structuredData }) 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/content.css">
+  <link rel="stylesheet" href="/assets/${contentAssetName}">
   <link rel="canonical" href="${canonical}">
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="theme-color" content="#102633">
@@ -441,7 +443,7 @@ await Promise.all([
   writeFile(resolve(output, "projects-index.json"), JSON.stringify(projectIndex)),
   writeFile(resolve(output, "project-details.json"), JSON.stringify(projectDetails)),
   writeFile(resolve(output, "forecast-audit.json"), JSON.stringify(forecastAudit)),
-  writeFile(resolve(output, "assets/content.css"), contentStyles),
+  writeFile(resolve(output, "assets", contentAssetName), contentStyles),
   writeFile(resolve(output, "sitemap.xml"), sitemap),
   writeFile(resolve(output, "robots.txt"), robots),
   writeFile(resolve(output, ".nojekyll"), ""),

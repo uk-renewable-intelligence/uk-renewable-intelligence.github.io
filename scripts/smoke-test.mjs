@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const output = resolve(root, "dist-static");
-const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, about, directory, contentStyles] = await Promise.all([
+const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, about, directory] = await Promise.all([
   readFile(resolve(output, "index.html"), "utf8"),
   readFile(resolve(output, "404.html"), "utf8"),
   readFile(resolve(output, "dashboard-summary.json"), "utf8").then(JSON.parse),
@@ -15,7 +15,6 @@ const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, f
   readFile(resolve(output, "forecasting/index.html"), "utf8"),
   readFile(resolve(output, "about/index.html"), "utf8"),
   readFile(resolve(output, "projects/index.html"), "utf8"),
-  readFile(resolve(output, "assets/content.css"), "utf8"),
 ]);
 let sourceData;
 try {
@@ -42,6 +41,8 @@ assert.match(html, /Renewable Intelligence Workflow/);
 assert.match(html, /Primary navigation/);
 assert.match(html, /class="topbar-inner"/);
 assert.match(html, /--page-width: min\(1560px, 95vw\)/);
+assert.match(html, /\.topbar-inner \{[\s\S]*?gap: 24px;/);
+assert.match(html, /\.status-pill \{[^}]*font-size: 11px;/);
 assert.match(html, /Screening Workbench/);
 assert.match(html, /footer-grid/);
 assert.match(html, /projects-index\.json/);
@@ -85,7 +86,12 @@ assert.match(about, /Engineering portfolio case study/);
 assert.match(about, /UK Renewable Intelligence Platform/);
 assert.match(about, /Engineering Capabilities/);
 assert.match(directory, /13,009 source-backed planning records/);
+const contentAssetMatch = forecasting.match(/href="\/assets\/(content\.[a-f0-9]{10}\.css)"/);
+assert.ok(contentAssetMatch, "Generated content pages should reference a fingerprinted stylesheet");
+const contentStyles = await readFile(resolve(output, "assets", contentAssetMatch[1]), "utf8");
 assert.match(contentStyles, /--page-width: min\(1560px, 95vw\)/);
+assert.match(contentStyles, /\.status-pill \{[^}]*font-size: 11px;/);
+assert.match(contentStyles, /@media \(max-width: 1050px\)[\s\S]*?\.status-pill \{ display: none; \}/);
 assert.doesNotMatch(contentStyles, /min\(1120px, 92vw\)/);
 assert.equal((sitemap.match(/<url>/g) || []).length, 13_039);
 assert.match(sitemap, new RegExp(`<loc>https://uk-renewable-intelligence.github.io/projects/${forecastProject.ref_id}/</loc>`));

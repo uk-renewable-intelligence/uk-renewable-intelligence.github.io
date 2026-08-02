@@ -49,6 +49,7 @@ button, input, select { font: inherit; }
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
+  gap: 24px;
   width: var(--page-width);
   min-height: 62px;
   margin: 0 auto;

@@ -31,9 +31,9 @@ a { color: var(--teal); text-underline-offset: 2px; }
 .brand { display: flex; align-items: center; gap: 10px; color: white; font-size: 14px; font-weight: 720; text-decoration: none; }
 .brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; background: rgba(255,255,255,.08); font-size: 11px; letter-spacing: .08em; }
 .site-nav { display: flex; align-self: stretch; }
-.site-nav a { display: flex; align-items: center; padding: 3px 16px 0; border-bottom: 3px solid transparent; color: #c0d0d7; font-size: 11px; font-weight: 680; text-decoration: none; }
+.site-nav a { display: flex; align-items: center; padding: 3px 16px 0; border-bottom: 3px solid transparent; color: #b9c9d1; font-size: 12px; font-weight: 650; text-decoration: none; }
 .site-nav a:hover, .site-nav a.active { border-bottom-color: #54c4b7; color: white; background: rgba(255,255,255,.04); }
-.status-pill { justify-self: end; display: flex; align-items: center; gap: 8px; color: #c3d1d7; font-size: 10px; }
+.status-pill { justify-self: end; display: flex; align-items: center; gap: 8px; color: #c3d1d7; font-size: 11px; }
 .status-pill span { width: 7px; height: 7px; border-radius: 50%; background: #4ac6a5; box-shadow: 0 0 0 3px rgba(74,198,165,.12); }
 .content-shell { width: var(--page-width); margin: 0 auto; padding: 42px 0 64px; }
 .breadcrumb { margin-bottom: 24px; color: var(--muted); font-size: 10px; }
@@ -108,9 +108,13 @@ h3 { font-size: 17px; }
 .footer-column a:hover { color: white; }
 .footer-bottom { display: flex; justify-content: space-between; gap: 24px; width: var(--page-width); margin: 0 auto; padding: 16px 0 22px; border-top: 1px solid rgba(255,255,255,.1); color: #8da3ad; font-size: 8px; line-height: 1.5; }
 
+@media (max-width: 1050px) {
+  .site-header-inner { grid-template-columns: 1fr auto; }
+  .status-pill { display: none; }
+}
+
 @media (max-width: 760px) {
   .site-header-inner { grid-template-columns: auto 1fr; }
-  .status-pill { display: none; }
   .site-nav { justify-self: end; overflow-x: auto; }
   .site-nav a { padding: 3px 10px 0; white-space: nowrap; }
   .section-heading { align-items: flex-start; flex-direction: column; }
