@@ -22,7 +22,7 @@ try {
   };
 }
 
-assert.match(html, /See which projects are most likely to reach operation/);
+assert.match(html, /UK Renewable Infrastructure Intelligence/);
 assert.match(html, /Scenario lab/);
 assert.match(html, /Evidence &amp; methodology/);
 assert.match(html, /Copy view link/);
