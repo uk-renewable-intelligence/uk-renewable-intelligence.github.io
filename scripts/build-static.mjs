@@ -264,12 +264,14 @@ function projectPage(project) {
     : `<p class="note">This planning record is outside the current active forecast universe. Its public project evidence remains searchable and comparable.</p>`;
 
   const body = `
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/projects/">Projects</a> / REPD ${escapeHtml(String(project.ref_id).padStart(5, "0"))}</nav>
-    <p class="eyebrow">UK renewable project intelligence · REPD ${escapeHtml(String(project.ref_id).padStart(5, "0"))}</p>
-    <h1>${escapeHtml(name)}</h1>
-    <p class="lede">${escapeHtml(safeValue(project.operator, "Developer not reported"))} · ${escapeHtml(safeValue(project.technology))} · ${escapeHtml(safeValue(project.region))}</p>
-    <div class="actions"><a class="button primary" href="/?project=${encodeURIComponent(String(project.ref_id))}#projects">Open in interactive explorer</a><a class="button secondary" href="/forecasting/">How forecasting works</a></div>
-    <nav class="page-jump" aria-label="Project page sections"><span>On this page</span><a href="#project-evidence">Evidence</a><a href="#planning-timeline">Timeline</a><a href="#delivery-forecast">Forecast</a><a href="#project-signals">Signals</a></nav>
+    <section class="page-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/projects/">Projects</a> / REPD ${escapeHtml(String(project.ref_id).padStart(5, "0"))}</nav>
+      <p class="eyebrow">UK renewable project intelligence · REPD ${escapeHtml(String(project.ref_id).padStart(5, "0"))}</p>
+      <h1>${escapeHtml(name)}</h1>
+      <p class="lede">${escapeHtml(safeValue(project.operator, "Developer not reported"))} · ${escapeHtml(safeValue(project.technology))} · ${escapeHtml(safeValue(project.region))}</p>
+      <div class="actions"><a class="button primary" href="/?project=${encodeURIComponent(String(project.ref_id))}#projects">Open in interactive explorer</a><a class="button secondary" href="/forecasting/">How forecasting works</a></div>
+      <nav class="page-jump" aria-label="Project page sections"><span>On this page</span><a href="#project-evidence">Evidence</a><a href="#planning-timeline">Timeline</a><a href="#delivery-forecast">Forecast</a><a href="#project-signals">Signals</a></nav>
+    </section>
     <div class="grid" aria-label="Project summary">
       <article class="card metric-card span-4"><span>Reported capacity</span><strong>${formatMw(project.capacity_mw)}</strong><small>Installed Capacity (MWelec) in the public REPD record</small></article>
       <article class="card metric-card span-4"><span>Development stage</span><strong>${escapeHtml(safeValue(project.stage))}</strong><small>Current short status in the latest source snapshot</small></article>
@@ -309,19 +311,26 @@ function directoryPath(page) {
   return page === 1 ? "/projects/" : `/projects/page/${page}/`;
 }
 
+function directoryPagination(page, position) {
+  return `<nav class="pagination${position === "top" ? " pagination-top" : ""}" aria-label="Project directory pages, ${position}">${Array.from({ length: directoryPageCount }, (_, index) => index + 1).map((number) => number === page ? `<span aria-current="page">${number}</span>` : `<a href="${directoryPath(number)}" aria-label="Project directory page ${number}">${number}</a>`).join("")}</nav>`;
+}
+
 function directoryPage(page) {
   const start = (page - 1) * directoryPageSize;
   const pageProjects = directoryProjects.slice(start, start + directoryPageSize);
   const path = directoryPath(page);
   const body = `
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Projects${page > 1 ? ` / Page ${page}` : ""}</nav>
-    <p class="eyebrow">Permanent project directory · Page ${page} of ${directoryPageCount}</p>
-    <h1>UK Renewable Project Directory</h1>
-    <p class="lede">Browse ${formatNumber(projects.length)} source-backed planning records. Every project has a permanent, indexable page with its latest public status, capacity, planning authority and available research forecast.</p>
-    <div class="actions"><a class="button primary" href="/#projects">Search and filter interactively</a><a class="button secondary" href="/forecasting/">Review forecast evidence</a></div>
+    <section class="page-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Projects${page > 1 ? ` / Page ${page}` : ""}</nav>
+      <p class="eyebrow">Permanent project directory · Page ${page} of ${directoryPageCount}</p>
+      <h1>UK Renewable Project Directory</h1>
+      <p class="lede">Browse ${formatNumber(projects.length)} source-backed planning records. Every project has a permanent, indexable page with its latest public status, capacity, planning authority and available research forecast.</p>
+      <div class="actions"><a class="button primary" href="/#projects">Search and filter interactively</a><a class="button secondary" href="/forecasting/">Review forecast evidence</a></div>
+      ${directoryPagination(page, "top")}
+    </section>
     <section class="section"><ul class="directory-list">${pageProjects.map((project) => `
       <li><a href="${projectPath(project)}"><div><strong>${escapeHtml(safeValue(project.site_name, "Unnamed project"))}</strong><small>${escapeHtml(safeValue(project.technology))} · ${escapeHtml(safeValue(project.stage))} · ${formatMw(project.capacity_mw)}</small></div><span>View →</span></a></li>`).join("")}</ul>
-      <nav class="pagination" aria-label="Project directory pages">${Array.from({ length: directoryPageCount }, (_, index) => index + 1).map((number) => number === page ? `<span aria-current="page">${number}</span>` : `<a href="${directoryPath(number)}" aria-label="Project directory page ${number}">${number}</a>`).join("")}</nav>
+      ${directoryPagination(page, "bottom")}
     </section>`;
   return pageShell({
     title: `UK renewable project directory${page > 1 ? ` – page ${page}` : ""} | UK Renewable Intelligence`,
@@ -347,12 +356,14 @@ const forecastingPage = pageShell({
   description: "Leakage-aware, rolling-origin validation for UK renewable project time-to-operation forecasts, with calibration, Brier score and horizon-specific limitations.",
   canonicalPath: "/forecasting/",
   body: `
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Forecasting</nav>
-    <p class="eyebrow">Forecast methodology · Snapshot ${escapeHtml(formatDate(forecastAudit.latest_snapshot))}</p>
-    <h1>Renewable Project Delivery Forecasting</h1>
-    <p class="lede">The platform estimates whether a non-operational UK renewable project will reach operation within two, three or five years. Complex models receive no automatic advantage: every challenger must beat transparent baselines on later, fully observed time cohorts.</p>
-    <div class="actions"><a class="button primary" href="/#projects">Explore project forecasts</a><a class="button secondary" href="${githubSource}/blob/main/analysis/forecast_audit.py">Inspect the audit code</a></div>
-    <nav class="page-jump" aria-label="Forecasting page sections"><span>On this page</span><a href="#forecast-performance">Performance</a><a href="#validation-controls">Validation</a><a href="#external-scenarios">Scenarios</a><a href="#audit-decision">Decision</a></nav>
+    <section class="page-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Forecasting</nav>
+      <p class="eyebrow">Forecast methodology · Snapshot ${escapeHtml(formatDate(forecastAudit.latest_snapshot))}</p>
+      <h1>Renewable Project Delivery Forecasting</h1>
+      <p class="lede">The platform estimates whether a non-operational UK renewable project will reach operation within two, three or five years. Complex models receive no automatic advantage: every challenger must beat transparent baselines on later, fully observed time cohorts.</p>
+      <div class="actions"><a class="button primary" href="/#projects">Explore project forecasts</a><a class="button secondary" href="${githubSource}/blob/main/analysis/forecast_audit.py">Inspect the audit code</a></div>
+      <nav class="page-jump" aria-label="Forecasting page sections"><span>On this page</span><a href="#forecast-performance">Performance</a><a href="#validation-controls">Validation</a><a href="#external-scenarios">Scenarios</a><a href="#audit-decision">Decision</a></nav>
+    </section>
     <div class="grid">
       <article class="card metric-card span-4"><span>Historical panel</span><strong>${formatNumber(forecastAudit.panel_rows)}</strong><small>project-snapshot observations at one project × source date grain</small></article>
       <article class="card metric-card span-4"><span>Independent snapshots</span><strong>${formatNumber(forecastAudit.snapshots)}</strong><small>September 2019 to May 2026; the binding evidence constraint</small></article>
@@ -386,12 +397,14 @@ const aboutPage = pageShell({
   description: "An open engineering portfolio project that turns the UK Renewable Energy Planning Database into searchable project intelligence, mapping and leakage-aware forecasts.",
   canonicalPath: "/about/",
   body: `
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / About</nav>
-    <p class="eyebrow">Engineering portfolio case study</p>
-    <h1>UK Renewable Intelligence Platform</h1>
-    <p class="lede">UK Renewable Infrastructure Intelligence is an open, public-data decision-support platform developed by HJ Nakamura, a Mechanical Engineering student at Imperial College London. It combines data engineering, geospatial analysis, probabilistic modelling and product design in one deployable system.</p>
-    <div class="actions"><a class="button primary" href="${githubSource}">View source code</a><a class="button secondary" href="/#workbench">Open the engineering tools</a></div>
-    <nav class="page-jump" aria-label="About page sections"><span>On this page</span><a href="#platform-purpose">Purpose</a><a href="#engineering-capabilities">Capabilities</a><a href="#responsible-use">Responsible Use</a></nav>
+    <section class="page-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / About</nav>
+      <p class="eyebrow">Engineering portfolio case study</p>
+      <h1>UK Renewable Intelligence Platform</h1>
+      <p class="lede">UK Renewable Infrastructure Intelligence is an open, public-data decision-support platform developed by HJ Nakamura, a Mechanical Engineering student at Imperial College London. It combines data engineering, geospatial analysis, probabilistic modelling and product design in one deployable system.</p>
+      <div class="actions"><a class="button primary" href="${githubSource}">View source code</a><a class="button secondary" href="/#workbench">Open the engineering tools</a></div>
+      <nav class="page-jump" aria-label="About page sections"><span>On this page</span><a href="#platform-purpose">Purpose</a><a href="#engineering-capabilities">Capabilities</a><a href="#responsible-use">Responsible Use</a></nav>
+    </section>
     <section class="section" id="platform-purpose"><div class="section-heading"><div><p class="eyebrow">Product thesis</p><h2>Platform Purpose</h2></div><p>The official REPD is the source of truth for public planning records. This platform adds the layer needed for screening: search, permanent evidence pages, comparable risk signals, maps, portfolios and research forecasts.</p></div><div class="grid">
       <article class="card metric-card span-4"><span>Planning records</span><strong>${formatNumber(summary.kpis.datasetProjects)}</strong><small>Complete current explorer snapshot</small></article>
       <article class="card metric-card span-4"><span>Linked forecasts</span><strong>${formatNumber(summary.kpis.forecastCoverage)}</strong><small>Active projects joined to the research forecast universe</small></article>
