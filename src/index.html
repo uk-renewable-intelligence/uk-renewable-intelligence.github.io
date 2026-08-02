@@ -30,19 +30,29 @@
   <body class="loading">
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="topbar">
-      <a class="brand" href="#overview" aria-label="UK Renewable Infrastructure Intelligence home">
+      <a class="brand" href="./" aria-label="UK Renewable Infrastructure Intelligence home">
         <span class="brand-mark">UK</span>
         <span>Renewable Intelligence</span>
       </a>
-      <nav aria-label="Dashboard sections">
-        <a href="#overview">Overview</a>
-        <a href="#projects">Explorer</a>
-        <a href="#workbench">Map &amp; tools</a>
-        <a href="#scenario">Scenario lab</a>
-        <a href="#trust">Evidence</a>
+      <nav class="global-nav" aria-label="Primary navigation">
+        <a class="active" href="./" aria-current="page">Dashboard</a>
+        <a href="./projects/">Projects</a>
+        <a href="./forecasting/">Forecasting</a>
+        <a href="./about/">About</a>
       </nav>
       <span class="status-pill"><span></span>Public beta · Model v2.0</span>
     </header>
+
+    <nav class="section-nav" aria-label="Dashboard sections">
+      <div>
+        <span>Dashboard</span>
+        <a class="active" href="#overview">Overview</a>
+        <a href="#projects">Explorer</a>
+        <a href="#workbench">Workbench</a>
+        <a href="#scenario">Scenarios</a>
+        <a href="#trust">Evidence</a>
+      </div>
+    </nav>
 
     <main id="main-content">
       <section class="hero" id="overview">
@@ -81,6 +91,39 @@
         <a href="./forecasting/">Review validation</a>
       </section>
 
+      <section class="platform-overview" aria-labelledby="platform-overview-title">
+        <div class="platform-overview-heading">
+          <div><p class="eyebrow">Platform overview</p><h2 id="platform-overview-title">Renewable Intelligence Workflow</h2></div>
+          <p>A single workspace for moving from public planning records to project screening, portfolio forecasts and external-risk scenarios.</p>
+        </div>
+        <div class="module-grid">
+          <a class="module-card" href="#projects">
+            <span class="module-number">01</span>
+            <h3>Project Intelligence</h3>
+            <p>Search the full planning register and inspect permanent evidence pages.</p>
+            <strong>Project Explorer <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="module-card" href="#workbench">
+            <span class="module-number">02</span>
+            <h3>Portfolio Screening</h3>
+            <p>Map, rank, compare and shortlist projects with consistent filters.</p>
+            <strong>Screening Workbench <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="module-card" href="./forecasting/">
+            <span class="module-number">03</span>
+            <h3>Delivery Forecasting</h3>
+            <p>Review two-, three- and five-year estimates with validation evidence.</p>
+            <strong>Forecast Research <span aria-hidden="true">→</span></strong>
+          </a>
+          <a class="module-card" href="#scenario">
+            <span class="module-number">04</span>
+            <h3>Scenario Analysis</h3>
+            <p>Stress-test the portfolio against rates, costs, grid delays and policy.</p>
+            <strong>Scenario Lab <span aria-hidden="true">→</span></strong>
+          </a>
+        </div>
+      </section>
+
       <section class="metric-grid" aria-label="Portfolio metrics">
         <article class="metric"><span>REPD records</span><strong id="kpi-records">—</strong><small>Complete explorer dataset</small></article>
         <article class="metric"><span>Forecast universe</span><strong id="kpi-projects">—</strong><small>Active pipeline projects</small></article>
@@ -91,14 +134,14 @@
       <section class="dashboard-grid">
         <article class="panel span-7">
           <div class="section-heading">
-            <div><p class="eyebrow">Portfolio composition</p><h2>Where capacity sits today</h2></div>
+            <div><p class="eyebrow">Portfolio composition</p><h2>Pipeline Capacity by Stage</h2></div>
             <span class="subtle">Reported MW</span>
           </div>
           <div class="bar-list" id="stage-chart"><p class="loading-label">Loading portfolio data…</p></div>
         </article>
         <article class="panel span-5">
           <div class="section-heading">
-            <div><p class="eyebrow">Technology outlook</p><h2>Expected within three years</h2></div>
+            <div><p class="eyebrow">Technology outlook</p><h2>Three-Year Technology Outlook</h2></div>
           </div>
           <div class="tech-list" id="tech-chart"><p class="loading-label">Loading technology data…</p></div>
         </article>
@@ -106,7 +149,7 @@
 
       <section class="section-block" id="projects">
         <div class="section-intro">
-          <div><p class="eyebrow">Project explorer</p><h2>UK renewable project register</h2></div>
+          <div><p class="eyebrow">Project explorer</p><h2>UK Renewable Project Register</h2></div>
           <p>Search all <strong id="explorer-total"></strong> REPD records. Open a row to inspect planning evidence, screening risk and available forecast horizons. <a class="inline-link" href="./projects/">Browse the permanent project directory.</a></p>
         </div>
         <div class="coverage-strip" aria-label="Explorer data coverage">
@@ -172,7 +215,7 @@
 
       <section class="section-block" id="workbench">
         <div class="section-intro">
-          <div><p class="eyebrow">Screening workbench</p><h2>Map, rank and evaluate projects</h2></div>
+          <div><p class="eyebrow">Screening workbench</p><h2>Project Screening Workbench</h2></div>
           <p>The original modelling workspace is reproduced here with a faster public interface. Explorer filters flow into the map, rankings and opportunity answers.</p>
         </div>
         <div class="tool-tabs" role="tablist" aria-label="Project screening tools">
@@ -186,7 +229,7 @@
 
         <div class="tool-panel panel active" id="map-panel" role="tabpanel" aria-labelledby="map-tab">
           <div class="tool-panel-heading">
-            <div><p class="eyebrow">Geospatial screening</p><h3>UK project map</h3></div>
+            <div><p class="eyebrow">Geospatial screening</p><h3>UK Project Map</h3></div>
             <div class="inline-tools">
               <label><span>Map density</span><select id="map-density"><option value="500">Top 500 by capacity</option><option value="all">All filtered projects</option></select></label>
               <button id="refresh-map" class="text-button" type="button">Apply Explorer filters</button>
@@ -199,7 +242,7 @@
 
         <div class="tool-panel panel" id="regional-panel" role="tabpanel" aria-labelledby="regional-tab" hidden>
           <div class="tool-panel-heading">
-            <div><p class="eyebrow">Regional opportunity</p><h3>Capacity, maturity and delivery ranking</h3></div>
+            <div><p class="eyebrow">Regional opportunity</p><h3>Regional Delivery Ranking</h3></div>
             <label class="answer-control"><span>Quick answer</span><select id="quick-answer"><option value="score">Highest-scoring projects</option><option value="construction">Largest under construction</option><option value="offshore">Largest offshore wind</option><option value="region">Largest projects by region</option></select></label>
           </div>
           <div class="analysis-grid">
@@ -216,7 +259,7 @@
 
         <div class="tool-panel panel" id="shortlist-panel" role="tabpanel" aria-labelledby="shortlist-tab" hidden>
           <div class="tool-panel-heading">
-            <div><p class="eyebrow">Portfolio builder</p><h3>Project shortlist</h3></div>
+            <div><p class="eyebrow">Portfolio builder</p><h3>Project Shortlist</h3></div>
             <div class="inline-actions"><button id="download-shortlist" class="primary-button" type="button">Download shortlist</button><button id="clear-shortlist" class="text-button" type="button">Clear</button></div>
           </div>
           <div class="mini-metric-grid">
@@ -228,7 +271,7 @@
         </div>
 
         <div class="tool-panel panel" id="compare-panel" role="tabpanel" aria-labelledby="compare-tab" hidden>
-          <div class="tool-panel-heading"><div><p class="eyebrow">Side-by-side diligence</p><h3>Compare two projects</h3></div></div>
+          <div class="tool-panel-heading"><div><p class="eyebrow">Side-by-side diligence</p><h3>Project Comparison</h3></div></div>
           <div class="compare-selectors">
             <label><span>Project A</span><select id="compare-a"></select></label>
             <label><span>Project B</span><select id="compare-b"></select></label>
@@ -238,7 +281,7 @@
 
         <div class="tool-panel panel" id="grid-panel" role="tabpanel" aria-labelledby="grid-tab" hidden>
           <div class="tool-panel-heading">
-            <div><p class="eyebrow">Near-live GB context</p><h3>Carbon intensity and generation mix</h3></div>
+            <div><p class="eyebrow">Near-live GB context</p><h3>GB Grid Context</h3></div>
             <button id="refresh-grid" class="text-button" type="button">Refresh live data</button>
           </div>
           <div class="mini-metric-grid four" id="grid-metrics"><div><span>Status</span><strong>Not loaded</strong></div></div>
@@ -248,7 +291,7 @@
 
         <div class="tool-panel panel" id="offshore-panel" role="tabpanel" aria-labelledby="offshore-tab" hidden>
           <div class="tool-panel-heading">
-            <div><p class="eyebrow">Techno-economic model</p><h3>Offshore wind quick calculator</h3></div>
+            <div><p class="eyebrow">Techno-economic model</p><h3>Offshore Wind Screening Model</h3></div>
             <label class="wide-select"><span>Offshore project</span><select id="offshore-project"></select></label>
           </div>
           <div class="calculator-grid">
@@ -271,7 +314,7 @@
 
       <section class="section-block scenario-section" id="scenario">
         <div class="section-intro">
-          <div><p class="eyebrow">Scenario lab</p><h2>External-risk sensitivity analysis</h2></div>
+          <div><p class="eyebrow">Scenario lab</p><h2>External-Risk Scenario Analysis</h2></div>
           <p>Adjust external conditions to stress-test the published forecast. Effects are bounded assumptions, deliberately separated from the trained model.</p>
         </div>
         <div class="scenario-grid">
@@ -315,13 +358,13 @@
 
       <section class="section-block" id="trust">
         <div class="section-intro">
-          <div><p class="eyebrow">Evidence &amp; methodology</p><h2>Forecast validation and data quality</h2></div>
+          <div><p class="eyebrow">Evidence &amp; methodology</p><h2>Forecast Validation &amp; Data Quality</h2></div>
           <p>Temporal holdouts, explicit limitations and source-quality checks make clear where the platform is useful—and where it is not ready.</p>
         </div>
         <div class="trust-grid">
           <article class="panel trust-summary">
             <span class="research-badge">Research-only forecast</span>
-            <h3>Transparent survival baseline deployed</h3>
+            <h3>Production Forecast Baseline</h3>
             <p>CatBoost remains a diagnostic challenger. It was rejected because its temporal-holdout Brier score did not improve reliability consistently.</p>
             <div class="trust-stats">
               <div><strong id="panel-rows"></strong><span>panel rows</span></div>
@@ -330,7 +373,7 @@
             </div>
           </article>
           <article class="panel">
-            <div class="section-heading"><div><p class="eyebrow">Temporal holdout</p><h3>Candidate comparison</h3></div><span class="subtle">Lower Brier is better</span></div>
+            <div class="section-heading"><div><p class="eyebrow">Temporal holdout</p><h3>Model Candidate Comparison</h3></div><span class="subtle">Lower Brier is better</span></div>
             <div class="table-wrap compact"><table><thead><tr><th>Horizon</th><th>Model</th><th>ROC-AUC</th><th>Brier</th><th>Status</th></tr></thead><tbody id="backtest-table"></tbody></table></div>
           </article>
         </div>
@@ -347,16 +390,33 @@
       <div id="project-dialog-content"></div>
     </dialog>
 
-    <footer>
-      <div><strong>UK Renewable Infrastructure Intelligence</strong><p>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</p></div>
-      <div class="footer-links">
-        <a href="./projects/">Project directory</a>
-        <a href="./forecasting/">Forecast methodology</a>
-        <a href="./about/">About this project</a>
-        <a href="https://github.com/uk-renewable-intelligence/uk-renewable-intelligence.github.io" target="_blank" rel="noreferrer">View source code ↗</a>
-        <a href="https://uk-renewable-project-screening.streamlit.app/" target="_blank" rel="noreferrer">Open modelling workspace ↗</a>
-        <span>Model v2.0 · Research only · Not investment advice</span>
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="./"><span class="brand-mark">UK</span><span>Renewable Intelligence</span></a>
+          <p>Open UK renewable-project intelligence for planning evidence, screening and delivery research.</p>
+        </div>
+        <nav class="footer-column" aria-label="Platform links">
+          <strong>Platform</strong>
+          <a href="./">Dashboard</a>
+          <a href="#projects">Project Explorer</a>
+          <a href="#workbench">Screening Workbench</a>
+          <a href="#scenario">Scenario Analysis</a>
+        </nav>
+        <nav class="footer-column" aria-label="Research links">
+          <strong>Research</strong>
+          <a href="./forecasting/">Forecasting</a>
+          <a href="./projects/">Project Directory</a>
+          <a href="./about/">About</a>
+          <a href="https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract" target="_blank" rel="noreferrer">Official REPD Source ↗</a>
+        </nav>
+        <nav class="footer-column" aria-label="Development links">
+          <strong>Development</strong>
+          <a href="https://github.com/uk-renewable-intelligence/uk-renewable-intelligence.github.io" target="_blank" rel="noreferrer">Source Code ↗</a>
+          <a href="https://uk-renewable-project-screening.streamlit.app/" target="_blank" rel="noreferrer">Modelling Workspace ↗</a>
+        </nav>
       </div>
+      <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Model v2.0 · Research only · Not investment advice</span></div>
     </footer>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

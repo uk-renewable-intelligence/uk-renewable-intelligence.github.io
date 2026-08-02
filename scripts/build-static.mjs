@@ -104,15 +104,34 @@ const projectPath = (project) => `/projects/${encodeURIComponent(String(project.
 const projectUrl = (project) => `${publicOrigin}${projectPath(project)}`;
 const splitFactors = (value) => safeValue(value, "").split(/\s*·\s*|[;|]/).map((item) => item.trim()).filter(Boolean);
 
-const header = `
+const headerMarkup = (canonicalPath) => {
+  const activePage = canonicalPath.startsWith("/projects/")
+    ? "projects"
+    : canonicalPath.startsWith("/forecasting/")
+      ? "forecasting"
+      : canonicalPath.startsWith("/about/")
+        ? "about"
+        : "dashboard";
+  const navItem = (key, href, label) => `<a${activePage === key ? ' class="active" aria-current="page"' : ""} href="${href}">${label}</a>`;
+  return `
   <header class="site-header">
     <div class="site-header-inner">
       <a class="brand" href="/" aria-label="UK Renewable Infrastructure Intelligence home"><span class="brand-mark">UK</span><span>Renewable Intelligence</span></a>
-      <nav class="site-nav" aria-label="Site sections"><a href="/#projects">Explorer</a><a href="/#workbench">Map &amp; tools</a><a href="/projects/">Projects</a><a href="/forecasting/">Forecasting</a><a href="/about/">About</a></nav>
+      <nav class="site-nav" aria-label="Primary navigation">${navItem("dashboard", "/", "Dashboard")}${navItem("projects", "/projects/", "Projects")}${navItem("forecasting", "/forecasting/", "Forecasting")}${navItem("about", "/about/", "About")}</nav>
+      <span class="status-pill"><span></span>Public beta · Model v2.0</span>
     </div>
   </header>`;
+};
 const footer = `
-  <footer class="site-footer"><div class="site-footer-inner"><span>UK Renewable Infrastructure Intelligence · Research only</span><span><a href="${githubSource}">Source code</a> · <a href="${repdSource}">Official REPD source</a></span></div></footer>`;
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand"><a class="brand" href="/"><span class="brand-mark">UK</span><span>Renewable Intelligence</span></a><p>Open UK renewable-project intelligence for planning evidence, screening and delivery research.</p></div>
+      <nav class="footer-column" aria-label="Platform links"><strong>Platform</strong><a href="/">Dashboard</a><a href="/#projects">Project Explorer</a><a href="/#workbench">Screening Workbench</a><a href="/#scenario">Scenario Analysis</a></nav>
+      <nav class="footer-column" aria-label="Research links"><strong>Research</strong><a href="/forecasting/">Forecasting</a><a href="/projects/">Project Directory</a><a href="/about/">About</a><a href="${repdSource}">Official REPD Source ↗</a></nav>
+      <nav class="footer-column" aria-label="Development links"><strong>Development</strong><a href="${githubSource}">Source Code ↗</a><a href="https://uk-renewable-project-screening.streamlit.app/">Modelling Workspace ↗</a></nav>
+    </div>
+    <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Model v2.0 · Research only · Not investment advice</span></div>
+  </footer>`;
 
 function pageShell({ title, description, canonicalPath, body, structuredData }) {
   const canonical = `${publicOrigin}${canonicalPath}`;
@@ -134,7 +153,7 @@ function pageShell({ title, description, canonicalPath, body, structuredData }) 
   <title>${escapeHtml(title)}</title>
   <script type="application/ld+json">${jsonLd(structuredData)}</script>
 </head>
-<body>${header}<main class="content-shell">${body}</main>${footer}</body>
+<body>${headerMarkup(canonicalPath)}<main class="content-shell">${body}</main>${footer}</body>
 </html>`;
 }
 
@@ -248,12 +267,13 @@ function projectPage(project) {
     <h1>${escapeHtml(name)}</h1>
     <p class="lede">${escapeHtml(safeValue(project.operator, "Developer not reported"))} · ${escapeHtml(safeValue(project.technology))} · ${escapeHtml(safeValue(project.region))}</p>
     <div class="actions"><a class="button primary" href="/?project=${encodeURIComponent(String(project.ref_id))}#projects">Open in interactive explorer</a><a class="button secondary" href="/forecasting/">How forecasting works</a></div>
+    <nav class="page-jump" aria-label="Project page sections"><span>On this page</span><a href="#project-evidence">Evidence</a><a href="#planning-timeline">Timeline</a><a href="#delivery-forecast">Forecast</a><a href="#project-signals">Signals</a></nav>
     <div class="grid" aria-label="Project summary">
       <article class="card metric-card span-4"><span>Reported capacity</span><strong>${formatMw(project.capacity_mw)}</strong><small>Installed Capacity (MWelec) in the public REPD record</small></article>
       <article class="card metric-card span-4"><span>Development stage</span><strong>${escapeHtml(safeValue(project.stage))}</strong><small>Current short status in the latest source snapshot</small></article>
       <article class="card metric-card span-4"><span>Screening score</span><strong>${formatNumber(project.screening_score)}/100</strong><small>${escapeHtml(safeValue(project.screening_risk, "Unknown"))} heuristic screening risk</small></article>
     </div>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Planning record</p><h2>Project evidence</h2></div><p>Source fields are retained from the latest UK Renewable Energy Planning Database snapshot.</p></div>
+    <section class="section" id="project-evidence"><div class="section-heading"><div><p class="eyebrow">Planning record</p><h2>Project Evidence</h2></div><p>Source fields are retained from the latest UK Renewable Energy Planning Database snapshot.</p></div>
       <div class="fact-grid">
         <div><span>Technology</span><strong>${escapeHtml(safeValue(project.technology))}</strong></div>
         <div><span>Operator or applicant</span><strong>${escapeHtml(safeValue(project.operator))}</strong></div>
@@ -265,9 +285,9 @@ function projectPage(project) {
         <div><span>CfD allocation round</span><strong>${escapeHtml(safeValue(project.cfd_round))}</strong></div>
       </div>
     </section>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Planning history</p><h2>Public timeline</h2></div></div><article class="card">${timelineMarkup(project)}</article></section>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Time to operation</p><h2>Research forecast</h2></div><p>Probability-weighted screening, validated on later time cohorts and kept explicitly separate from scenario assumptions.</p></div><article class="card">${forecast}</article></section>
-    <section class="section"><div class="grid"><article class="card span-6"><p class="eyebrow">Positive public evidence</p>${factorMarkup(project.positive_factors, "No additional positive signal is recorded.")}</article><article class="card span-6"><p class="eyebrow">Risks and missing evidence</p>${factorMarkup(project.risk_factors, "No additional public-data warning is recorded.")}</article></div></section>
+    <section class="section" id="planning-timeline"><div class="section-heading"><div><p class="eyebrow">Planning history</p><h2>Planning Timeline</h2></div></div><article class="card">${timelineMarkup(project)}</article></section>
+    <section class="section" id="delivery-forecast"><div class="section-heading"><div><p class="eyebrow">Time to operation</p><h2>Delivery Forecast</h2></div><p>Probability-weighted screening, validated on later time cohorts and kept explicitly separate from scenario assumptions.</p></div><article class="card">${forecast}</article></section>
+    <section class="section" id="project-signals"><div class="grid"><article class="card span-6"><p class="eyebrow">Positive public evidence</p>${factorMarkup(project.positive_factors, "No additional positive signal is recorded.")}</article><article class="card span-6"><p class="eyebrow">Risks and missing evidence</p>${factorMarkup(project.risk_factors, "No additional public-data warning is recorded.")}</article></div></section>
     <section class="section source-box"><strong>Source and scope.</strong> Project facts derive from the <a href="${repdSource}">official DESNZ Renewable Energy Planning Database quarterly extract</a>. Forecasts and screening scores are research enrichments by this platform; public data does not reveal private finance, land, supply-chain or contract terms.</section>`;
 
   return pageShell({
@@ -294,7 +314,7 @@ function directoryPage(page) {
   const body = `
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Projects${page > 1 ? ` / Page ${page}` : ""}</nav>
     <p class="eyebrow">Permanent project directory · Page ${page} of ${directoryPageCount}</p>
-    <h1>UK renewable project directory</h1>
+    <h1>UK Renewable Project Directory</h1>
     <p class="lede">Browse ${formatNumber(projects.length)} source-backed planning records. Every project has a permanent, indexable page with its latest public status, capacity, planning authority and available research forecast.</p>
     <div class="actions"><a class="button primary" href="/#projects">Search and filter interactively</a><a class="button secondary" href="/forecasting/">Review forecast evidence</a></div>
     <section class="section"><ul class="directory-list">${pageProjects.map((project) => `
@@ -321,32 +341,33 @@ const auditRows = Object.entries(forecastAudit.horizons).map(([horizon, result])
   <tr><td>${horizon} years</td><td>${formatNumber(result.uncalibrated.rows)}</td><td>${formatNumber(result.uncalibrated.events)}</td><td class="numeric">${Number(result.uncalibrated.roc_auc).toFixed(3)}</td><td class="numeric">${Number(result.uncalibrated.brier_score).toFixed(4)}</td><td class="numeric">${Number(result.platt_calibrated.brier_score).toFixed(4)}</td><td class="numeric">${Number(result.historical_base_rate.brier_score).toFixed(4)}</td><td>${escapeHtml(result.promotion_decision)}</td></tr>`).join("");
 
 const forecastingPage = pageShell({
-  title: "UK renewable project forecasting methodology and validation",
+  title: "Renewable Project Delivery Forecasting | UK Renewable Intelligence",
   description: "Leakage-aware, rolling-origin validation for UK renewable project time-to-operation forecasts, with calibration, Brier score and horizon-specific limitations.",
   canonicalPath: "/forecasting/",
   body: `
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Forecasting</nav>
     <p class="eyebrow">Forecast methodology · Snapshot ${escapeHtml(formatDate(forecastAudit.latest_snapshot))}</p>
-    <h1>Probability of what gets built—and when</h1>
+    <h1>Renewable Project Delivery Forecasting</h1>
     <p class="lede">The platform estimates whether a non-operational UK renewable project will reach operation within two, three or five years. Complex models receive no automatic advantage: every challenger must beat transparent baselines on later, fully observed time cohorts.</p>
     <div class="actions"><a class="button primary" href="/#projects">Explore project forecasts</a><a class="button secondary" href="${githubSource}/blob/main/analysis/forecast_audit.py">Inspect the audit code</a></div>
+    <nav class="page-jump" aria-label="Forecasting page sections"><span>On this page</span><a href="#forecast-performance">Performance</a><a href="#validation-controls">Validation</a><a href="#external-scenarios">Scenarios</a><a href="#audit-decision">Decision</a></nav>
     <div class="grid">
       <article class="card metric-card span-4"><span>Historical panel</span><strong>${formatNumber(forecastAudit.panel_rows)}</strong><small>project-snapshot observations at one project × source date grain</small></article>
       <article class="card metric-card span-4"><span>Independent snapshots</span><strong>${formatNumber(forecastAudit.snapshots)}</strong><small>September 2019 to May 2026; the binding evidence constraint</small></article>
       <article class="card metric-card span-4"><span>Current decision</span><strong>Retain baseline</strong><small>No calibration challenger cleared the declared promotion threshold</small></article>
     </div>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Latest rolling-origin audit</p><h2>Performance by forecast horizon</h2></div><p>ROC-AUC measures ranking (0.5 is random). Brier score measures probability error and is better when lower.</p></div>
+    <section class="section" id="forecast-performance"><div class="section-heading"><div><p class="eyebrow">Latest rolling-origin audit</p><h2>Forecast-Horizon Performance</h2></div><p>ROC-AUC measures ranking (0.5 is random). Brier score measures probability error and is better when lower.</p></div>
       <article class="card table-scroll"><table class="audit-table"><thead><tr><th>Horizon</th><th>Test rows</th><th>Events</th><th>Raw AUC</th><th>Raw Brier</th><th>Calibrated</th><th>Base rate</th><th>Decision</th></tr></thead><tbody>${auditRows}</tbody></table></article>
       <p class="note">The two-year model shows useful discrimination on the latest fully observed cohort, but its calibrated Brier improvement over the constant historical base rate is only ${formatPercent(forecastAudit.horizons["2"].brier_skill_vs_base_rate)} of the base score—below the pre-declared 2% promotion requirement. Three- and five-year estimates remain more uncertain.</p>
     </section>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Leakage controls</p><h2>How the back-test stays honest</h2></div></div><div class="grid">
-      <article class="card span-6"><h3>Fully observed outcomes</h3><p class="note">An origin is evaluated only when the entire forecast horizon has elapsed. Unresolved recent projects are censored rather than labelled as failures.</p></article>
-      <article class="card span-6"><h3>Project-purged time splits</h3><p class="note">Test projects are removed from survival-training rows. Features such as developer track record count only information dated before the forecast origin.</p></article>
-      <article class="card span-6"><h3>Calibration is a challenger</h3><p class="note">Log-odds, Platt and isotonic calibration are fitted on earlier out-of-time cohorts and tested on the latest complete cohort. They are not promoted using in-sample fit.</p></article>
-      <article class="card span-6"><h3>Complexity must earn promotion</h3><p class="note">CatBoost, logistic survival and calibration variants remain diagnostic challengers unless they improve temporal-holdout reliability by the published threshold.</p></article>
+    <section class="section" id="validation-controls"><div class="section-heading"><div><p class="eyebrow">Leakage controls</p><h2>Temporal Validation Controls</h2></div></div><div class="grid">
+      <article class="card span-6"><h3>Fully Observed Outcomes</h3><p class="note">An origin is evaluated only when the entire forecast horizon has elapsed. Unresolved recent projects are censored rather than labelled as failures.</p></article>
+      <article class="card span-6"><h3>Project-Purged Temporal Splits</h3><p class="note">Test projects are removed from survival-training rows. Features such as developer track record count only information dated before the forecast origin.</p></article>
+      <article class="card span-6"><h3>Calibration Governance</h3><p class="note">Log-odds, Platt and isotonic calibration are fitted on earlier out-of-time cohorts and tested on the latest complete cohort. They are not promoted using in-sample fit.</p></article>
+      <article class="card span-6"><h3>Model Promotion Gate</h3><p class="note">CatBoost, logistic survival and calibration variants remain diagnostic challengers unless they improve temporal-holdout reliability by the published threshold.</p></article>
     </div></section>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Politics, inflation and external conditions</p><h2>Scenario inputs, not fake causal precision</h2></div></div><article class="card"><p class="note">Bank Rate, construction-cost inflation, grid delay, policy support and CfD assumptions can materially change project delivery. However, ${formatNumber(forecastAudit.snapshots)} independent REPD dates are not enough to estimate credible political or macroeconomic coefficients. The dashboard therefore exposes these as bounded, editable stress assumptions in the <a href="/#scenario">Scenario Lab</a>, separate from the trained forecast. This avoids treating thousands of projects observed on the same date as thousands of independent macro observations.</p></article></section>
-    <section class="section source-box"><strong>Audit decision.</strong> ${escapeHtml(forecastAudit.overall_decision)} The exact saved evidence is available in <a href="/forecast-audit.json">forecast-audit.json</a> and the reproducible Python companion in the public repository.</section>`,
+    <section class="section" id="external-scenarios"><div class="section-heading"><div><p class="eyebrow">Politics, inflation and external conditions</p><h2>Macroeconomic &amp; Policy Scenarios</h2></div></div><article class="card"><p class="note">Bank Rate, construction-cost inflation, grid delay, policy support and CfD assumptions can materially change project delivery. However, ${formatNumber(forecastAudit.snapshots)} independent REPD dates are not enough to estimate credible political or macroeconomic coefficients. The dashboard therefore exposes these as bounded, editable stress assumptions in the <a href="/#scenario">Scenario Lab</a>, separate from the trained forecast. This avoids treating thousands of projects observed on the same date as thousands of independent macro observations.</p></article></section>
+    <section class="section source-box" id="audit-decision"><strong>Audit decision.</strong> ${escapeHtml(forecastAudit.overall_decision)} The exact saved evidence is available in <a href="/forecast-audit.json">forecast-audit.json</a> and the reproducible Python companion in the public repository.</section>`,
   structuredData: {
     "@context": "https://schema.org",
     "@type": "TechArticle",
@@ -365,21 +386,22 @@ const aboutPage = pageShell({
   body: `
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / About</nav>
     <p class="eyebrow">Engineering portfolio case study</p>
-    <h1>From planning records to decision-ready renewable intelligence</h1>
+    <h1>UK Renewable Intelligence Platform</h1>
     <p class="lede">UK Renewable Infrastructure Intelligence is an open, public-data decision-support platform developed by HJ Nakamura, a Mechanical Engineering student at Imperial College London. It combines data engineering, geospatial analysis, probabilistic modelling and product design in one deployable system.</p>
     <div class="actions"><a class="button primary" href="${githubSource}">View source code</a><a class="button secondary" href="/#workbench">Open the engineering tools</a></div>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Product thesis</p><h2>What is likely to reach operation?</h2></div><p>The official REPD is the source of truth for public planning records. This platform adds the layer needed for screening: search, permanent evidence pages, comparable risk signals, maps, portfolios and research forecasts.</p></div><div class="grid">
+    <nav class="page-jump" aria-label="About page sections"><span>On this page</span><a href="#platform-purpose">Purpose</a><a href="#engineering-capabilities">Capabilities</a><a href="#responsible-use">Responsible Use</a></nav>
+    <section class="section" id="platform-purpose"><div class="section-heading"><div><p class="eyebrow">Product thesis</p><h2>Platform Purpose</h2></div><p>The official REPD is the source of truth for public planning records. This platform adds the layer needed for screening: search, permanent evidence pages, comparable risk signals, maps, portfolios and research forecasts.</p></div><div class="grid">
       <article class="card metric-card span-4"><span>Planning records</span><strong>${formatNumber(summary.kpis.datasetProjects)}</strong><small>Complete current explorer snapshot</small></article>
       <article class="card metric-card span-4"><span>Linked forecasts</span><strong>${formatNumber(summary.kpis.forecastCoverage)}</strong><small>Active projects joined to the research forecast universe</small></article>
       <article class="card metric-card span-4"><span>Mapped records</span><strong>${formatNumber(projects.filter((project) => Number.isFinite(Number(project.latitude)) && Number.isFinite(Number(project.longitude))).length)}</strong><small>Valid coordinates in the public map workbench</small></article>
     </div></section>
-    <section class="section"><div class="section-heading"><div><p class="eyebrow">Engineering scope</p><h2>What the project demonstrates</h2></div></div><div class="grid">
-      <article class="card span-6"><h3>Data engineering</h3><p class="note">Normalises irregular REPD releases into a project × snapshot panel, documents fallback entity keys, preserves source fields and validates duplicates, ranges and freshness.</p></article>
-      <article class="card span-6"><h3>Forecast governance</h3><p class="note">Uses right-censored survival targets, project-purged temporal holdouts, probability calibration challengers and explicit release gates instead of selecting the most impressive-looking model.</p></article>
-      <article class="card span-6"><h3>Mechanical engineering context</h3><p class="note">Includes an offshore wind quick calculator for capacity factor, turbine count, CAPEX, revenue and displaced carbon, with visible techno-economic assumptions.</p></article>
-      <article class="card span-6"><h3>Public product delivery</h3><p class="note">Runs as a static, accessible site with no account, no sleeping server, lazy project data, shareable explorer state, permanent project pages and automated integrity checks.</p></article>
+    <section class="section" id="engineering-capabilities"><div class="section-heading"><div><p class="eyebrow">Engineering scope</p><h2>Engineering Capabilities</h2></div></div><div class="grid">
+      <article class="card span-6"><h3>Data Engineering</h3><p class="note">Normalises irregular REPD releases into a project × snapshot panel, documents fallback entity keys, preserves source fields and validates duplicates, ranges and freshness.</p></article>
+      <article class="card span-6"><h3>Forecast Governance</h3><p class="note">Uses right-censored survival targets, project-purged temporal holdouts, probability calibration challengers and explicit release gates instead of selecting the most impressive-looking model.</p></article>
+      <article class="card span-6"><h3>Mechanical Engineering Context</h3><p class="note">Includes an offshore wind quick calculator for capacity factor, turbine count, CAPEX, revenue and displaced carbon, with visible techno-economic assumptions.</p></article>
+      <article class="card span-6"><h3>Public Product Delivery</h3><p class="note">Runs as a static, accessible site with no account, no sleeping server, lazy project data, shareable explorer state, permanent project pages and automated integrity checks.</p></article>
     </div></section>
-    <section class="section source-box"><strong>Responsible use.</strong> This is a research and early-stage screening tool, not investment advice. Public planning data cannot reveal private financing, land, supply-chain or contract terms. Methodology, limitations and code remain public so claims can be inspected.</section>`,
+    <section class="section source-box" id="responsible-use"><strong>Responsible use.</strong> This is a research and early-stage screening tool, not investment advice. Public planning data cannot reveal private financing, land, supply-chain or contract terms. Methodology, limitations and code remain public so claims can be inspected.</section>`,
   structuredData: {
     "@context": "https://schema.org",
     "@type": "AboutPage",

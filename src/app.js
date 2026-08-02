@@ -967,7 +967,7 @@ const qualityCards = [
 qs("#quality-grid").innerHTML = qualityCards.map((card) => `<article class="quality-card"><span>${card.label}</span><strong>${card.value}</strong><p>${card.description}</p><i class="${card.tone}"></i></article>`).join("");
 qs("#limitations-list").innerHTML = data.model.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
 
-const navLinks = qsa(".topbar nav a");
+const navLinks = qsa(".section-nav a");
 const sections = navLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
 const observer = new IntersectionObserver((entries) => {
   const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
