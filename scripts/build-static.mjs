@@ -8,14 +8,21 @@ const publicOrigin = "https://uk-renewable-intelligence.github.io";
 const repdSource = "https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract";
 const githubSource = "https://github.com/uk-renewable-intelligence/uk-renewable-intelligence.github.io";
 
-const [template, styles, app, contentStyles, forecastAudit] = await Promise.all([
+const [template, styles, app, contentStyles, forecastingStyles, forecastingApp, forecastAudit, forecastChallenger, challengerScores, driverRegistry] = await Promise.all([
   readFile(resolve(root, "src/index.html"), "utf8"),
   readFile(resolve(root, "src/styles.css"), "utf8"),
   readFile(resolve(root, "src/app.js"), "utf8"),
   readFile(resolve(root, "src/content.css"), "utf8"),
+  readFile(resolve(root, "src/forecasting.css"), "utf8"),
+  readFile(resolve(root, "src/forecasting.js"), "utf8"),
   readFile(resolve(root, "analysis/forecast-audit.json"), "utf8").then(JSON.parse),
+  readFile(resolve(root, "analysis/forecast-challenger.json"), "utf8").then(JSON.parse),
+  readFile(resolve(root, "analysis/forecast-challenger-scores.json"), "utf8").then(JSON.parse),
+  readFile(resolve(root, "analysis/external-driver-registry.json"), "utf8").then(JSON.parse),
 ]);
 const contentAssetName = `content.${createHash("sha256").update(contentStyles).digest("hex").slice(0, 10)}.css`;
+const forecastingStyleAssetName = `forecasting.${createHash("sha256").update(forecastingStyles).digest("hex").slice(0, 10)}.css`;
+const forecastingAppAssetName = `forecasting.${createHash("sha256").update(forecastingApp).digest("hex").slice(0, 10)}.js`;
 
 let sourceData;
 try {
@@ -41,19 +48,36 @@ const { projects, ...sourceSummary } = sourceData;
 const forecastProjects = projects.filter((project) => (
   project.has_forecast && Number.isFinite(Number(project.prob_operational_2y))
 ));
-const probabilityCounts = new Map();
+const normaliseRefId = (value) => String(value ?? "").replace(/\.0$/, "").trim().padStart(5, "0");
+const challengerScoreByRefId = new Map(challengerScores.map((row) => [
+  normaliseRefId(row.ref_id),
+  Number(row.richer_catboost_score),
+]));
+const projectsByProbability = new Map();
 forecastProjects.forEach((project) => {
   const probability = Number(project.prob_operational_2y);
-  probabilityCounts.set(probability, (probabilityCounts.get(probability) || 0) + 1);
+  if (!projectsByProbability.has(probability)) projectsByProbability.set(probability, []);
+  projectsByProbability.get(probability).push(project);
 });
-const signalScoreByProbability = new Map();
+const signalScoreByRefId = new Map();
 let signalCursor = 0;
-[...probabilityCounts.entries()].sort(([a], [b]) => a - b).forEach(([probability, count]) => {
-  const midRank = signalCursor + (count + 1) / 2;
-  signalScoreByProbability.set(probability, Math.round(100 * midRank / forecastProjects.length));
-  signalCursor += count;
+[...projectsByProbability.entries()].sort(([a], [b]) => a - b).forEach(([, group]) => {
+  group.sort((a, b) => (
+    (challengerScoreByRefId.get(normaliseRefId(a.ref_id)) ?? 0.5)
+    - (challengerScoreByRefId.get(normaliseRefId(b.ref_id)) ?? 0.5)
+  ));
+  group.forEach((project, index) => {
+    signalScoreByRefId.set(
+      normaliseRefId(project.ref_id),
+      Math.round(100 * (signalCursor + index + 1) / forecastProjects.length),
+    );
+  });
+  signalCursor += group.length;
 });
-const deliverySignalScore = (project) => signalScoreByProbability.get(Number(project.prob_operational_2y)) ?? null;
+const deliverySignalScore = (project) => signalScoreByRefId.get(normaliseRefId(project.ref_id)) ?? null;
+projects.forEach((project) => {
+  project.delivery_signal_score = deliverySignalScore(project);
+});
 const deliverySignalBand = (project) => {
   const score = deliverySignalScore(project);
   if (score === null) return "Not available";
@@ -104,13 +128,19 @@ const summary = {
   model: {
     ...sourceSummary.model,
     publicRelease: {
-      version: "2.1",
+      version: "2.2",
       status: "ranking_only",
       primaryHorizonYears: 2,
       probabilityRelease: "withheld",
       fiveYearOutput: "withheld",
-      scoreBuckets: signalScoreByProbability.size,
-      definition: "Percentile rank of the audited two-year empirical delivery score across currently forecastable projects.",
+      scoreBuckets: new Set(forecastProjects.map(deliverySignalScore)).size,
+      primaryModel: "empirical survival rank with AI tie-breaker",
+      definition: "Percentile rank of the audited two-year empirical delivery score, with richer project evidence used only to order projects tied in the same empirical bucket.",
+      challengerDecision: forecastChallenger.two_year_decision,
+      challengerAuc: forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc,
+      empiricalAuc: forecastChallenger.horizons["2"].latest_cohort.empirical_survival.roc_auc,
+      challengerAveragePrecision: forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.average_precision,
+      empiricalAveragePrecision: forecastChallenger.horizons["2"].latest_cohort.empirical_survival.average_precision,
     },
     rollingAudit: {
       overallDecision: forecastAudit.overall_decision,
@@ -122,7 +152,9 @@ const summary = {
           testCohort: result.test_cohort,
           testRows: result.uncalibrated.rows,
           events: result.uncalibrated.events,
-          rocAuc: result.uncalibrated.roc_auc,
+          rocAuc: horizon === "2"
+            ? forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc
+            : result.uncalibrated.roc_auc,
           rawBrier: result.uncalibrated.brier_score,
           calibratedBrier: result.platt_calibrated.brier_score,
           baseRateBrier: result.historical_base_rate.brier_score,
@@ -154,6 +186,27 @@ const projectDetails = Object.fromEntries(projects.map((project) => [
   String(project.ref_id),
   Object.fromEntries(Object.entries(project).filter(([key]) => key === "ref_id" || detailFields.has(key))),
 ]));
+const forecastData = {
+  generatedAt: summary.generatedAt,
+  latestSnapshot: summary.latestSnapshot,
+  modelVersion: summary.model.publicRelease.version,
+  releaseStatus: summary.model.publicRelease.status,
+  projects: forecastProjects.map((project) => ({
+    ref_id: project.ref_id,
+    site_name: project.site_name,
+    operator: project.operator,
+    technology: project.technology,
+    region: project.region,
+    stage: project.stage,
+    capacity_mw: Number(project.capacity_mw) || 0,
+    latitude: Number.isFinite(Number(project.latitude)) ? Number(project.latitude) : null,
+    longitude: Number.isFinite(Number(project.longitude)) ? Number(project.longitude) : null,
+    signal: deliverySignalScore(project),
+    confidence: project.forecast_confidence,
+    p2: Number(project.prob_operational_2y) || 0,
+    p3: Number(project.prob_operational_3y) || 0,
+  })),
+};
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
@@ -194,7 +247,7 @@ const headerMarkup = (canonicalPath) => {
     <div class="site-header-inner">
       <a class="brand" href="/" aria-label="UK Renewable Infrastructure Intelligence home"><span class="brand-mark">UK</span><span>Renewable Intelligence</span></a>
       <nav class="site-nav" aria-label="Primary navigation">${navItem("dashboard", "/", "Dashboard")}${navItem("projects", "/projects/", "Projects")}${navItem("forecasting", "/forecasting/", "Forecasting")}${navItem("about", "/about/", "About")}</nav>
-      <span class="status-pill"><span></span>Public beta · Forecast v2.1</span>
+      <span class="status-pill"><span></span>Public beta · Forecast v2.2</span>
     </div>
   </header>`;
 };
@@ -206,10 +259,10 @@ const footer = `
       <nav class="footer-column" aria-label="Research links"><strong>Research</strong><a href="/forecasting/">Forecasting</a><a href="/projects/">Project Directory</a><a href="/about/">About</a><a href="${repdSource}">Official REPD Source ↗</a></nav>
       <nav class="footer-column" aria-label="Development links"><strong>Development</strong><a href="${githubSource}">Source Code ↗</a><a href="https://uk-renewable-project-screening.streamlit.app/">Modelling Workspace ↗</a></nav>
     </div>
-    <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Forecast v2.1 · Ranking signal only · Not investment advice</span></div>
+    <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Forecast v2.2 · Ranking signal only · Not investment advice</span></div>
   </footer>`;
 
-function pageShell({ title, description, canonicalPath, body, structuredData }) {
+function pageShell({ title, description, canonicalPath, body, structuredData, head = "", scripts = "", bodyClass = "" }) {
   const canonical = `${publicOrigin}${canonicalPath}`;
   return `<!doctype html>
 <html lang="en">
@@ -228,8 +281,9 @@ function pageShell({ title, description, canonicalPath, body, structuredData }) 
   <meta name="twitter:card" content="summary_large_image">
   <title>${escapeHtml(title)}</title>
   <script type="application/ld+json">${jsonLd(structuredData)}</script>
+  ${head}
 </head>
-<body>${headerMarkup(canonicalPath)}<main class="content-shell">${body}</main>${footer}</body>
+<body${bodyClass ? ` class="${escapeHtml(bodyClass)}"` : ""}>${headerMarkup(canonicalPath)}<main class="content-shell">${body}</main>${footer}${scripts}</body>
 </html>`;
 }
 
@@ -425,55 +479,159 @@ function directoryPage(page) {
 }
 
 const horizonProductStatus = { "2": "Ranking signal", "3": "Research only", "5": "Withheld" };
+const releasedMetrics = (horizon, result) => (
+  horizon === "2"
+    ? forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak
+    : result.uncalibrated
+);
 const auditRows = Object.entries(forecastAudit.horizons).map(([horizon, result]) => {
-  const brierPenalty = result.uncalibrated.brier_score / result.historical_base_rate.brier_score - 1;
+  const released = releasedMetrics(horizon, result);
+  const brierPenalty = released.brier_score / result.historical_base_rate.brier_score - 1;
   return `<tr>
     <td><strong>${horizon} years</strong><small>${formatNumber(result.rolling_cohorts)} rolling cohorts</small></td>
-    <td>${formatNumber(result.uncalibrated.rows)}<small>${formatNumber(result.uncalibrated.events)} observed events</small></td>
-    <td class="numeric">${Number(result.uncalibrated.roc_auc).toFixed(3)}</td>
-    <td class="numeric">${formatPercent(result.uncalibrated.event_rate)}</td>
-    <td class="numeric">${formatPercent(result.uncalibrated.mean_prediction)}</td>
+    <td>${formatNumber(released.rows)}<small>${formatNumber(released.events)} observed events</small></td>
+    <td class="numeric">${Number(released.roc_auc).toFixed(3)}</td>
+    <td class="numeric">${formatPercent(released.event_rate)}</td>
+    <td class="numeric">${formatPercent(released.mean_prediction)}</td>
     <td class="numeric penalty">+${formatPercent(brierPenalty)} worse</td>
     <td><span class="release-state state-${horizon}">${horizonProductStatus[horizon]}</span></td>
   </tr>`;
 }).join("");
 
-const rankingBars = Object.entries(forecastAudit.horizons).map(([horizon, result]) => `
+const rankingBars = Object.entries(forecastAudit.horizons).map(([horizon, result]) => {
+  const released = releasedMetrics(horizon, result);
+  return `
   <div class="evidence-bar-row">
     <div><strong>${horizon}-year horizon</strong><small>${formatNumber(result.rolling_cohorts)} rolling cohorts</small></div>
-    <div class="evidence-scale" aria-label="${horizon}-year ROC-AUC ${Number(result.uncalibrated.roc_auc).toFixed(3)}"><i style="width:${100 * result.uncalibrated.roc_auc}%"></i><span style="left:50%"></span></div>
-    <b>${Number(result.uncalibrated.roc_auc).toFixed(3)}</b>
-  </div>`).join("");
+    <div class="evidence-scale" aria-label="${horizon}-year ROC-AUC ${Number(released.roc_auc).toFixed(3)}"><i style="width:${100 * released.roc_auc}%"></i><span style="left:50%"></span></div>
+    <b>${Number(released.roc_auc).toFixed(3)}</b>
+  </div>`;
+}).join("");
 
 const reliabilityBars = Object.entries(forecastAudit.horizons).map(([horizon, result]) => {
-  const scale = Math.max(result.uncalibrated.mean_prediction, result.uncalibrated.event_rate, 0.01);
+  const released = releasedMetrics(horizon, result);
+  const scale = Math.max(released.mean_prediction, released.event_rate, 0.01);
   return `<div class="reliability-row">
-    <div><strong>${horizon} years</strong><small>${formatNumber(result.uncalibrated.rows)} held-out rows</small></div>
+    <div><strong>${horizon} years</strong><small>${formatNumber(released.rows)} held-out rows</small></div>
     <div class="reliability-bars">
-      <span><i style="width:${100 * result.uncalibrated.mean_prediction / scale}%"></i><b>Raw score mean ${formatPercent(result.uncalibrated.mean_prediction)}</b></span>
-      <span class="observed"><i style="width:${100 * result.uncalibrated.event_rate / scale}%"></i><b>Observed ${formatPercent(result.uncalibrated.event_rate)}</b></span>
+      <span><i style="width:${100 * released.mean_prediction / scale}%"></i><b>Raw score mean ${formatPercent(released.mean_prediction)}</b></span>
+      <span class="observed"><i style="width:${100 * released.event_rate / scale}%"></i><b>Observed ${formatPercent(released.event_rate)}</b></span>
     </div>
   </div>`;
 }).join("");
+
+const driverStatusClass = (status) => String(status).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const driverRows = [...driverRegistry.drivers]
+  .sort((a, b) => a.priority - b.priority || a.category.localeCompare(b.category))
+  .map((driver) => `<tr>
+    <td><strong>${escapeHtml(driver.variable)}</strong><small>${escapeHtml(driver.category)}</small></td>
+    <td><a href="${escapeHtml(driver.source_url)}">${escapeHtml(driver.source)} ↗</a></td>
+    <td>${escapeHtml(driver.treatment)}</td>
+    <td><span class="driver-state ${driverStatusClass(driver.status)}">${escapeHtml(driver.status)}</span></td>
+  </tr>`).join("");
 
 const forecastingPage = pageShell({
   title: "Renewable Project Delivery Signal | UK Renewable Intelligence",
   description: "An audited relative delivery signal for prioritising UK renewable projects, with rolling-origin validation, release gates and transparent limitations.",
   canonicalPath: "/forecasting/",
+  bodyClass: "forecasting-page",
+  head: `<link rel="preload" href="/forecast-data.json" as="fetch" crossorigin><link rel="stylesheet" href="/assets/${forecastingStyleAssetName}"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">`,
+  scripts: `<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script><script src="/assets/${forecastingAppAssetName}"></script>`,
   body: `
     <section class="page-hero">
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Forecasting</nav>
-      <p class="eyebrow">Delivery-signal governance · Snapshot ${escapeHtml(formatDate(forecastAudit.latest_snapshot))}</p>
-      <h1>Renewable Project Delivery Signal</h1>
-      <p class="lede">A relative two-year ranking for prioritising public-data research—not a literal chance of delivery. Exact probabilities and the five-year output are withheld because they do not clear the published reliability gates.</p>
-      <div class="actions"><a class="button primary" href="/#projects">Rank projects by delivery signal</a><a class="button secondary" href="${githubSource}/blob/main/analysis/forecast_audit.py">Inspect the audit code</a></div>
-      <nav class="page-jump" aria-label="Forecasting page sections"><span>On this page</span><a href="#forecast-performance">Release Matrix</a><a href="#forecast-evidence">Evidence</a><a href="#signal-use">Usage</a><a href="#validation-controls">Validation</a><a href="#external-scenarios">Scenarios</a></nav>
+      <p class="eyebrow">Forecast workbench · Snapshot ${escapeHtml(formatDate(forecastAudit.latest_snapshot))}</p>
+      <h1>UK Renewable Delivery Outlook</h1>
+      <p class="lede">Explore ${formatNumber(forecastProjects.length)} active projects, compare aggregate capacity outlooks, rank delivery evidence, map the pipeline and stress-test external conditions. The public two-year signal is a validated relative ranking—not a literal project probability.</p>
+      <div class="actions"><a class="button primary" href="#forecast-workbench">Open forecast explorer</a><a class="button secondary" href="#model-evidence">Review model evidence</a></div>
+      <nav class="page-jump" aria-label="Forecasting page sections"><span>Forecasting</span><a href="#forecast-workbench">Explorer</a><a href="#model-evidence">Model Evidence</a><a href="#forecast-performance">Release Matrix</a><a href="#external-inputs">External Inputs</a></nav>
     </section>
-    <div class="grid">
-      <article class="card metric-card span-4"><span>Two-year ranking AUC</span><strong>${Number(forecastAudit.horizons["2"].uncalibrated.roc_auc).toFixed(3)}</strong><small>Useful discrimination across ${formatNumber(forecastAudit.horizons["2"].rolling_cohorts)} rolling cohorts; 0.5 is random</small></article>
-      <article class="card metric-card span-4"><span>Probability release</span><strong>Withheld</strong><small>Calibrated error did not beat the base-rate benchmark by the required 2%</small></article>
-      <article class="card metric-card span-4"><span>Five-year availability</span><strong>Withheld</strong><small>${formatNumber(forecastAudit.horizons["5"].rolling_cohorts)} complete cohorts and AUC ${Number(forecastAudit.horizons["5"].uncalibrated.roc_auc).toFixed(3)} are insufficient</small></article>
-    </div>
+    <section class="forecast-workbench" id="forecast-workbench" aria-busy="true">
+      <div class="forecast-loading" id="forecast-loading"><span>Loading ${formatNumber(forecastProjects.length)} forecast records…</span></div>
+      <div id="forecast-interface" hidden>
+        <div class="forecast-toolbar">
+          <div class="forecast-filter-grid">
+            <label class="forecast-field"><span>Search projects</span><input id="forecast-search" type="search" placeholder="Project, developer, technology or region…" autocomplete="off"></label>
+            <label class="forecast-field"><span>Technology</span><select id="forecast-technology"><option>Loading…</option></select></label>
+            <label class="forecast-field"><span>Region</span><select id="forecast-region"><option>Loading…</option></select></label>
+            <label class="forecast-field"><span>Development stage</span><select id="forecast-stage"><option>Loading…</option></select></label>
+            <button class="forecast-reset" id="forecast-reset" type="button">Reset filters</button>
+          </div>
+          <div class="forecast-toolbar-foot">
+            <p class="forecast-filter-status" id="forecast-filter-status">All modelled projects</p>
+            <div class="forecast-horizon" aria-label="Aggregate outlook horizon"><span class="forecast-control-label">Outlook</span><button type="button" data-horizon="2" aria-pressed="false">2 years</button><button type="button" data-horizon="3" aria-pressed="true">3 years</button></div>
+          </div>
+        </div>
+
+        <div class="forecast-kpis" aria-label="Forecast summary">
+          <article class="forecast-kpi"><span>Projects modelled</span><strong id="forecast-kpi-projects">—</strong><small>Active, non-operational records in the current forecast universe</small></article>
+          <article class="forecast-kpi"><span>Pipeline capacity</span><strong id="forecast-kpi-capacity">—</strong><small>Gross capacity before timing and delivery adjustment</small></article>
+          <article class="forecast-kpi"><span id="forecast-kpi-expected-label">3-year expected capacity</span><strong id="forecast-kpi-expected">—</strong><small>Probability-weighted aggregate research outlook; not a project-level promise</small></article>
+          <article class="forecast-kpi"><span>Stronger-signal capacity</span><strong id="forecast-kpi-stronger">—</strong><small>Projects at or above the 75th delivery-signal percentile</small><small id="forecast-kpi-coverage">—</small></article>
+        </div>
+
+        <div class="forecast-tabs" role="tablist" aria-label="Forecast tools">
+          <button type="button" role="tab" id="forecast-tab-overview" aria-controls="forecast-panel-overview" aria-selected="true" data-forecast-tab="overview">Overview</button>
+          <button type="button" role="tab" id="forecast-tab-projects" aria-controls="forecast-panel-projects" aria-selected="false" tabindex="-1" data-forecast-tab="projects">Project rankings</button>
+          <button type="button" role="tab" id="forecast-tab-scenario" aria-controls="forecast-panel-scenario" aria-selected="false" tabindex="-1" data-forecast-tab="scenario">Scenario lab</button>
+          <button type="button" role="tab" id="forecast-tab-map" aria-controls="forecast-panel-map" aria-selected="false" tabindex="-1" data-forecast-tab="map">Forecast map</button>
+        </div>
+
+        <section class="forecast-panel" id="forecast-panel-overview" role="tabpanel" aria-labelledby="forecast-tab-overview" data-forecast-panel="overview">
+          <div class="forecast-panel-heading"><div><p class="eyebrow">Aggregate forecast</p><h2>Pipeline Outlook</h2></div><p>Filters update every metric and chart. Forecast capacity is aggregated across projects; exact project probabilities remain outside the public decision surface.</p></div>
+          <div class="forecast-outlook-strip" id="forecast-outlook-strip"></div>
+          <div class="forecast-chart-grid">
+            <article class="forecast-chart-card"><h3>Expected Capacity by Technology</h3><p class="forecast-chart-subtitle"><span data-forecast-horizon-label>3-year</span> aggregate outlook · highest-capacity technologies</p><div class="forecast-bars" id="forecast-technology-bars"></div></article>
+            <article class="forecast-chart-card"><h3>Expected Capacity by Stage</h3><p class="forecast-chart-subtitle"><span data-forecast-horizon-label>3-year</span> aggregate outlook · current public planning stage</p><div class="forecast-bars" id="forecast-stage-bars"></div></article>
+          </div>
+        </section>
+
+        <section class="forecast-panel" id="forecast-panel-projects" role="tabpanel" aria-labelledby="forecast-tab-projects" data-forecast-panel="projects" hidden>
+          <div class="forecast-panel-heading"><div><p class="eyebrow">Research queue</p><h2>Project Delivery Rankings</h2></div><p>The score compares projects with one another. A score of 80 means stronger two-year model evidence than roughly 80% of the current forecast universe.</p></div>
+          <div class="forecast-table-card">
+            <div class="forecast-table-tools"><p id="forecast-table-count">Loading projects…</p><div class="forecast-table-actions"><div class="forecast-sort"><label for="forecast-sort">Sort projects</label><select id="forecast-sort"><option value="signal">Delivery signal: strongest</option><option value="capacity">Capacity: largest</option><option value="name">Project name: A–Z</option></select></div><button class="forecast-download" id="forecast-download" type="button">Download filtered CSV</button></div></div>
+            <div class="forecast-table-scroll"><table class="forecast-table"><thead><tr><th>Project</th><th>Technology</th><th>Region</th><th>Stage</th><th>Capacity</th><th>2-year signal</th><th>Coverage</th><th>Evidence</th></tr></thead><tbody id="forecast-table-body"></tbody></table></div>
+            <div class="forecast-pagination"><span id="forecast-page-label">Page 1</span><div><button id="forecast-page-previous" type="button">Previous</button><button id="forecast-page-next" type="button">Next</button></div></div>
+          </div>
+        </section>
+
+        <section class="forecast-panel" id="forecast-panel-scenario" role="tabpanel" aria-labelledby="forecast-tab-scenario" data-forecast-panel="scenario" hidden>
+          <div class="forecast-panel-heading"><div><p class="eyebrow">External conditions</p><h2>Delivery Scenario Lab</h2></div><p>Apply bounded economic, grid and policy shocks to the filtered aggregate outlook. These sensitivities are intentionally separate from the trained project ranking.</p></div>
+          <div class="forecast-scenario-grid">
+            <article class="forecast-chart-card forecast-scenario-controls">
+              <div class="forecast-range"><div class="forecast-range-head"><label for="forecast-scenario-rate">Financing-rate shock</label><output id="forecast-scenario-rate-value">+0.0 pp</output></div><input id="forecast-scenario-rate" data-scenario-control type="range" min="-2" max="2" step="0.25" value="0"><small>Change from the reference financing environment</small></div>
+              <div class="forecast-range"><div class="forecast-range-head"><label for="forecast-scenario-costs">Construction &amp; material costs</label><output id="forecast-scenario-costs-value">+0%</output></div><input id="forecast-scenario-costs" data-scenario-control type="range" min="-20" max="30" step="2" value="0"><small>Real cost shock relative to the reference case</small></div>
+              <div class="forecast-range"><div class="forecast-range-head"><label for="forecast-scenario-grid-delay">Additional grid delay</label><output id="forecast-scenario-grid-delay-value">+0 months</output></div><input id="forecast-scenario-grid-delay" data-scenario-control type="range" min="0" max="24" step="3" value="0"><small>Portfolio-wide connection delay stress</small></div>
+              <div class="forecast-range"><div class="forecast-range-head"><label for="forecast-scenario-power">Electricity-price support</label><output id="forecast-scenario-power-value">+0%</output></div><input id="forecast-scenario-power" data-scenario-control type="range" min="-20" max="20" step="2" value="0"><small>Revenue-support shock relative to the reference case</small></div>
+              <div class="forecast-range"><div class="forecast-range-head"><label for="forecast-scenario-policy">Policy environment</label><output id="forecast-scenario-policy-value">Neutral</output></div><input id="forecast-scenario-policy" data-scenario-control type="range" min="-2" max="2" step="1" value="0"><small>Bounded qualitative support assumption</small></div>
+              <button class="forecast-reset" id="forecast-scenario-reset" type="button">Reset scenario</button>
+            </article>
+            <article class="forecast-scenario-result">
+              <p class="eyebrow"><span data-forecast-horizon-label>3-year</span> scenario outlook</p>
+              <div class="forecast-scenario-values"><div><span>Reference capacity</span><strong id="forecast-scenario-baseline">—</strong></div><div><span>Stress-adjusted capacity</span><strong id="forecast-scenario-adjusted">—</strong></div></div>
+              <p class="forecast-scenario-delta" id="forecast-scenario-delta">—</p>
+              <div class="forecast-driver-chips"><span id="forecast-scenario-index">100 conditions index</span><span id="forecast-scenario-drivers">Reference assumptions</span></div>
+              <p class="forecast-scenario-note">Scenario coefficients are transparent, bounded sensitivities for comparison—not trained causal effects or investment-grade forecasts. They do not alter the validated project ranking.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="forecast-panel" id="forecast-panel-map" role="tabpanel" aria-labelledby="forecast-tab-map" data-forecast-panel="map" hidden>
+          <div class="forecast-panel-heading"><div><p class="eyebrow">Spatial intelligence</p><h2>Forecast Project Map</h2></div><p>Marker size represents capacity and marker tone represents the public two-year delivery-signal band. Filters remain active across the map.</p></div>
+          <div class="forecast-map-card"><div class="forecast-map-head"><p id="forecast-map-count">Preparing located projects…</p><div class="forecast-map-legend" aria-label="Delivery signal legend"><span>Lower</span><span>Typical</span><span>Stronger</span></div></div><div id="forecast-map" aria-label="Map of forecastable UK renewable projects"></div></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="section" id="model-evidence"><div class="section-heading"><div><p class="eyebrow">Validated challenger</p><h2>Forecast Model Evidence</h2></div><p>The richer model is used only where it proved useful: resolving ties inside the stable empirical ordering.</p></div>
+      <div class="forecast-evidence-summary">
+        <article class="card metric-card"><span>Empirical ranking AUC</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.empirical_survival.roc_auc).toFixed(3)}</strong><small>Stage, technology and annual delivery hazard</small></article>
+        <article class="card metric-card"><span>AI tie-break ranking AUC</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc).toFixed(3)}</strong><small>+${(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc - forecastChallenger.horizons["2"].latest_cohort.empirical_survival.roc_auc).toFixed(3)} on the untouched latest cohort</small></article>
+        <article class="card metric-card"><span>Average precision</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.average_precision).toFixed(3)}</strong><small>Up from ${Number(forecastChallenger.horizons["2"].latest_cohort.empirical_survival.average_precision).toFixed(3)} for the empirical ranker</small></article>
+      </div>
+      <article class="card model-composition"><div><strong>Primary ordering</strong><span>Empirical survival score</span></div><i>+</i><div><strong>AI tie-break evidence</strong><span>Stage age · milestones · capacity revisions · developer history · regional track record · CfD · portfolio pressure</span></div><i>→</i><div><strong>Public output</strong><span>Relative percentile only</span></div></article>
+      <p class="note">The standalone CatBoost challenger was rejected as a replacement because its overall ranking was weaker. Its within-bucket ordering improved both AUC and average precision, passed the pre-declared ranking gate and is the only AI component promoted to Forecast v2.2.</p>
+    </section>
     <section class="section" id="forecast-performance"><div class="section-heading"><div><p class="eyebrow">Product governance</p><h2>Horizon Release Matrix</h2></div><p>Each horizon is released independently. Ranking quality cannot justify publishing an uncalibrated percentage.</p></div>
       <article class="card table-scroll"><table class="audit-table"><thead><tr><th>Horizon</th><th>Test sample</th><th>Ranking AUC</th><th>Observed</th><th>Raw mean</th><th>Probability error</th><th>Public output</th></tr></thead><tbody>${auditRows}</tbody></table></article>
       <p class="note">The two-year score is exposed only as a percentile rank across the current forecast universe. Three-year values remain methodology research. Five-year values are removed from the public decision surface.</p>
@@ -495,8 +653,12 @@ const forecastingPage = pageShell({
       <article class="card span-6"><h3>Calibration Governance</h3><p class="note">Log-odds, Platt and isotonic calibration are fitted on earlier out-of-time cohorts and tested on the latest complete cohort. They are not promoted using in-sample fit.</p></article>
       <article class="card span-6"><h3>Release Abstention</h3><p class="note">The public product now abstains: a failed horizon is shown as research-only or withheld instead of publishing the least-bad candidate as a probability.</p></article>
     </div></section>
-    <section class="section" id="external-scenarios"><div class="section-heading"><div><p class="eyebrow">Politics, inflation and external conditions</p><h2>Macroeconomic &amp; Policy Scenarios</h2></div></div><article class="card"><p class="note">Bank Rate, construction-cost inflation, grid delay, policy support and CfD assumptions can materially change project delivery. However, ${formatNumber(forecastAudit.snapshots)} independent REPD dates are not enough to estimate credible political or macroeconomic coefficients. The dashboard therefore exposes these as bounded, editable stress assumptions in the <a href="/#scenario">Scenario Lab</a>, separate from the trained forecast. This avoids treating thousands of projects observed on the same date as thousands of independent macro observations.</p></article></section>
-    <section class="section source-box" id="audit-decision"><strong>Public release decision.</strong> ${escapeHtml(forecastAudit.overall_decision)} The exact saved evidence is available in <a href="/forecast-audit.json">forecast-audit.json</a> and the reproducible Python companion in the public repository.</section>`,
+    <section class="section" id="external-inputs"><div class="section-heading"><div><p class="eyebrow">Feature roadmap</p><h2>External Driver Register</h2></div><p>Project evidence enters the trained challenger now. Market, political and news variables enter only after they have dated histories, source QA and a measurable out-of-time lift.</p></div>
+      <article class="card table-scroll"><table class="driver-table"><thead><tr><th>Variable</th><th>Source</th><th>Current treatment</th><th>Status</th></tr></thead><tbody>${driverRows}</tbody></table></article>
+      <p class="note">${escapeHtml(driverRegistry.principle)}</p>
+    </section>
+    <section class="section" id="external-scenarios"><div class="section-heading"><div><p class="eyebrow">Politics, prices and external conditions</p><h2>Macroeconomic &amp; Policy Scenarios</h2></div></div><article class="card"><p class="note">Bank Rate, wholesale electricity prices, construction and material costs, grid delay, developer-financing stress, policy support and CfD assumptions can materially change delivery conditions. However, ${formatNumber(forecastAudit.snapshots)} independent REPD dates are not enough to estimate credible macroeconomic coefficients. The <a href="/#scenario">Scenario Lab</a> therefore exposes them as bounded sensitivities, separate from the trained project ranking. This avoids pretending that thousands of projects sharing one date are thousands of independent observations of politics or inflation.</p></article></section>
+    <section class="section source-box" id="audit-decision"><strong>Public release decision.</strong> Promote the empirical ranking with the validated AI tie-breaker; continue withholding literal probabilities. The saved evidence is available in <a href="/forecast-challenger.json">forecast-challenger.json</a>, with the original calibration audit in <a href="/forecast-audit.json">forecast-audit.json</a>.</section>`,
   structuredData: {
     "@context": "https://schema.org",
     "@type": "TechArticle",
@@ -571,8 +733,13 @@ await Promise.all([
   writeFile(resolve(output, "dashboard-summary.json"), JSON.stringify(summary)),
   writeFile(resolve(output, "projects-index.json"), JSON.stringify(projectIndex)),
   writeFile(resolve(output, "project-details.json"), JSON.stringify(projectDetails)),
+  writeFile(resolve(output, "forecast-data.json"), JSON.stringify(forecastData)),
   writeFile(resolve(output, "forecast-audit.json"), JSON.stringify(forecastAudit)),
+  writeFile(resolve(output, "forecast-challenger.json"), JSON.stringify(forecastChallenger)),
+  writeFile(resolve(output, "external-driver-registry.json"), JSON.stringify(driverRegistry)),
   writeFile(resolve(output, "assets", contentAssetName), contentStyles),
+  writeFile(resolve(output, "assets", forecastingStyleAssetName), forecastingStyles),
+  writeFile(resolve(output, "assets", forecastingAppAssetName), forecastingApp),
   writeFile(resolve(output, "sitemap.xml"), sitemap),
   writeFile(resolve(output, "robots.txt"), robots),
   writeFile(resolve(output, ".nojekyll"), ""),

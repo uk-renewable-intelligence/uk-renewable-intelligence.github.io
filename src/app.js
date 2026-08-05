@@ -141,7 +141,9 @@ let signalCursor = 0;
 });
 const signalBand = (score) => score >= 75 ? "Stronger" : score >= 40 ? "Typical" : "Lower";
 data.projects.forEach((project) => {
-  project._delivery_signal_score = signalScoreByProbability.get(Number(project.prob_operational_2y)) ?? null;
+  project._delivery_signal_score = Number.isFinite(Number(project.delivery_signal_score))
+    ? Number(project.delivery_signal_score)
+    : signalScoreByProbability.get(Number(project.prob_operational_2y)) ?? null;
   project._delivery_signal_band = project._delivery_signal_score === null ? "Not available" : signalBand(project._delivery_signal_score);
 });
 
@@ -902,6 +904,8 @@ mapObserver.observe(qs("#workbench"));
 const controls = {
   rate: qs("#rate-slider"),
   cost: qs("#cost-slider"),
+  power: qs("#power-slider"),
+  market: qs("#market-slider"),
   grid: qs("#grid-slider"),
   policy: qs("#policy-select"),
   cfd: qs("#cfd-check"),
@@ -910,13 +914,26 @@ const policyShift = { restrictive: -0.34, neutral: 0, supportive: 0.27 };
 function updateScenario() {
   const rate = Number(controls.rate.value);
   const cost = Number(controls.cost.value);
+  const power = Number(controls.power.value);
+  const market = Number(controls.market.value);
   const grid = Number(controls.grid.value);
-  const shift = (-0.18 * rate) + (-0.025 * cost) + (-0.32 * grid) + policyShift[controls.policy.value] + (controls.cfd.checked ? 0.24 : 0);
+  const contributions = [
+    ["Financing rates", -0.14 * rate],
+    ["Construction & materials", -0.018 * cost],
+    ["Electricity revenue", 0.006 * power],
+    ["Developer stress", -0.0045 * market],
+    ["Grid delay", -0.28 * grid],
+    ["Policy", policyShift[controls.policy.value]],
+    ["CfD support", controls.cfd.checked ? 0.20 : 0],
+  ];
+  const shift = contributions.reduce((sum, [, contribution]) => sum + contribution, 0);
   const reference = 100;
   const scenario = Math.max(25, Math.min(220, reference * Math.exp(shift)));
   const delta = scenario / reference - 1;
   qs("#rate-output").textContent = `${rate >= 0 ? "+" : ""}${rate.toFixed(2)} pp`;
   qs("#cost-output").textContent = `${cost >= 0 ? "+" : ""}${cost.toFixed(0)}%`;
+  qs("#power-output").textContent = `${power >= 0 ? "+" : ""}${power.toFixed(0)}%`;
+  qs("#market-output").textContent = `${market.toFixed(0)} / 100`;
   qs("#grid-output").textContent = `${grid.toFixed(1)} years`;
   qs("#reference-value").textContent = `${formatNumber(reference)} index`;
   qs("#scenario-value").textContent = `${formatNumber(scenario)} index`;
@@ -926,12 +943,24 @@ function updateScenario() {
   qs("#scenario-note").textContent = Math.abs(shift) > .001
     ? `Combined assumptions imply ${Math.abs(100 * delta).toFixed(1)}% ${delta >= 0 ? "more supportive" : "more restrictive"} delivery conditions than the reference. This is a bounded sensitivity, not a causal forecast.`
     : "Current-conditions reference set to index 100.";
+  const materialDrivers = contributions
+    .filter(([, contribution]) => Math.abs(contribution) > .001)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .slice(0, 4);
+  qs("#scenario-drivers").innerHTML = materialDrivers.length
+    ? materialDrivers.map(([label, contribution]) => {
+      const impact = 100 * (Math.exp(contribution) - 1);
+      return `<span class="${impact < 0 ? "negative" : "positive"}">${escapeHtml(label)} <strong>${impact >= 0 ? "+" : ""}${impact.toFixed(0)}%</strong></span>`;
+    }).join("")
+    : '<span class="neutral">No active shocks</span>';
 }
 
 Object.values(controls).forEach((control) => control.addEventListener("input", updateScenario));
 qs("#reset-scenario").addEventListener("click", () => {
   controls.rate.value = 0;
   controls.cost.value = 0;
+  controls.power.value = 0;
+  controls.market.value = 0;
   controls.grid.value = 0;
   controls.policy.value = "neutral";
   controls.cfd.checked = false;

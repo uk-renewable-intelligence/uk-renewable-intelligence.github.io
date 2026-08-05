@@ -41,7 +41,7 @@
           <a href="./forecasting/">Forecasting</a>
           <a href="./about/">About</a>
         </nav>
-        <span class="status-pill"><span></span>Public beta · Forecast v2.1</span>
+        <span class="status-pill"><span></span>Public beta · Forecast v2.2</span>
       </div>
     </header>
 
@@ -61,7 +61,7 @@
         <div class="hero-copy">
           <p class="eyebrow">UK Renewable Intelligence · Data snapshot <span id="snapshot-date"></span></p>
           <h1>UK Renewable Infrastructure Intelligence</h1>
-          <p class="hero-lede">Prioritise UK renewable projects using 13,000+ planning records, a validated two-year delivery ranking and transparent external-risk scenarios.</p>
+          <p class="hero-lede">Prioritise UK renewable projects using 13,000+ planning records, a validated AI-enhanced two-year delivery ranking and transparent external-risk scenarios.</p>
           <div class="hero-actions">
             <a class="primary-button" href="#projects">Open Project Explorer</a>
             <a class="secondary-button" href="./forecasting/">Review Forecast Evidence</a>
@@ -327,9 +327,19 @@
               <div class="range-labels"><span>-3 pp</span><span>+3 pp</span></div>
             </div>
             <div class="control">
-              <div><label for="cost-slider">Construction-cost shock</label><output id="cost-output">+0%</output></div>
+              <div><label for="cost-slider">Construction &amp; materials shock</label><output id="cost-output">+0%</output></div>
               <input id="cost-slider" type="range" min="-20" max="30" step="1" value="0">
               <div class="range-labels"><span>-20%</span><span>+30%</span></div>
+            </div>
+            <div class="control">
+              <div><label for="power-slider">Electricity-price outlook</label><output id="power-output">+0%</output></div>
+              <input id="power-slider" type="range" min="-50" max="100" step="5" value="0">
+              <div class="range-labels"><span>-50%</span><span>+100%</span></div>
+            </div>
+            <div class="control">
+              <div><label for="market-slider">Developer market stress</label><output id="market-output">0 / 100</output></div>
+              <input id="market-slider" type="range" min="0" max="100" step="5" value="0">
+              <div class="range-labels"><span>Normal</span><span>Severe</span></div>
             </div>
             <div class="control">
               <div><label for="grid-slider">Additional grid delay</label><output id="grid-output">0.0 years</output></div>
@@ -353,9 +363,11 @@
             <div class="delta-chip" id="scenario-delta"></div>
             <div class="comparison-track" aria-hidden="true"><span id="reference-bar"></span><span id="scenario-bar"></span></div>
             <p class="scenario-note" id="scenario-note">Current-conditions reference scenario.</p>
+            <div class="scenario-drivers" id="scenario-drivers"></div>
             <div class="macro-row" id="macro-row"></div>
           </article>
         </div>
+        <p class="panel-footnote scenario-disclaimer">The developer-stress control can represent listed-company drawdown, credit stress or adverse filings, but no stock-price feed is currently applied to private developers. All scenario effects are transparent assumptions—not learned causal coefficients.</p>
       </section>
 
       <section class="section-block" id="trust">
@@ -367,7 +379,7 @@
           <article class="panel trust-summary">
             <span class="research-badge">Horizon gates active</span>
             <h3>Forecast Release Status</h3>
-            <p>The two-year empirical score is released for relative ranking only. Literal probabilities and the five-year output are withheld until they beat the declared benchmark.</p>
+            <p>The two-year empirical score now uses a validated AI tie-breaker and is released for relative ranking only. Literal probabilities and the five-year output remain withheld until they beat the declared benchmark.</p>
             <div class="trust-stats">
               <div><strong id="panel-rows"></strong><span>panel rows</span></div>
               <div><strong id="linked-projects"></strong><span>linked histories</span></div>
@@ -418,7 +430,7 @@
           <a href="https://uk-renewable-project-screening.streamlit.app/" target="_blank" rel="noreferrer">Modelling Workspace ↗</a>
         </nav>
       </div>
-      <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Forecast v2.1 · Ranking signal only · Not investment advice</span></div>
+      <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Forecast v2.2 · Ranking signal only · Not investment advice</span></div>
     </footer>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
