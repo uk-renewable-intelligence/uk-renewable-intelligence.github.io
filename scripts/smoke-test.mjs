@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const output = resolve(root, "dist-static");
-const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, about, directory] = await Promise.all([
+const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, forecastData, about, directory, challenger, driverRegistry] = await Promise.all([
   readFile(resolve(output, "index.html"), "utf8"),
   readFile(resolve(output, "404.html"), "utf8"),
   readFile(resolve(output, "dashboard-summary.json"), "utf8").then(JSON.parse),
@@ -13,8 +13,11 @@ const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, f
   readFile(resolve(output, "sitemap.xml"), "utf8"),
   readFile(resolve(output, "robots.txt"), "utf8"),
   readFile(resolve(output, "forecasting/index.html"), "utf8"),
+  readFile(resolve(output, "forecast-data.json"), "utf8").then(JSON.parse),
   readFile(resolve(output, "about/index.html"), "utf8"),
   readFile(resolve(output, "projects/index.html"), "utf8"),
+  readFile(resolve(output, "forecast-challenger.json"), "utf8").then(JSON.parse),
+  readFile(resolve(output, "external-driver-registry.json"), "utf8").then(JSON.parse),
 ]);
 let sourceData;
 try {
@@ -60,11 +63,29 @@ assert.equal(Object.keys(projectDetails).length, 13_009);
 assert.equal(new Set(projectIndex.map((project) => String(project.ref_id))).size, 13_009);
 assert.equal(summary.model.rollingAudit.horizons["2"].testRows, 4_019);
 assert.equal(summary.model.publicRelease.status, "ranking_only");
+assert.equal(summary.model.publicRelease.version, "2.2");
+assert.equal(summary.model.publicRelease.primaryModel, "empirical survival rank with AI tie-breaker");
 assert.equal(summary.model.publicRelease.probabilityRelease, "withheld");
+assert.ok(Math.abs(summary.model.rollingAudit.horizons["2"].rocAuc - 0.7911550869) < 1e-9);
+assert.ok(challenger.horizons["2"].ranking_promotion_passed);
+assert.ok(challenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc > challenger.horizons["2"].latest_cohort.empirical_survival.roc_auc);
+assert.ok(challenger.horizons["2"].latest_cohort.enriched_tiebreak.average_precision > challenger.horizons["2"].latest_cohort.empirical_survival.average_precision);
+assert.ok(driverRegistry.drivers.length >= 12);
 assert.equal(summary.model.rollingAudit.horizons["2"].promotionDecision, "ranking signal only");
 assert.equal(summary.model.rollingAudit.horizons["5"].promotionDecision, "withheld");
 assert.ok(summary.kpis.strongerSignalProjects > 0);
 assert.ok(summary.groups.deliveryTechnology.length > 5);
+const forecastIndex = projectIndex.filter((project) => project.has_forecast);
+assert.equal(forecastIndex.length, 6_189);
+assert.ok(forecastIndex.every((project) => Number.isFinite(Number(project.delivery_signal_score))));
+assert.ok(new Set(forecastIndex.map((project) => project.delivery_signal_score)).size >= 95);
+const coarseBuckets = new Map();
+forecastIndex.forEach((project) => {
+  const key = Number(project.prob_operational_2y);
+  if (!coarseBuckets.has(key)) coarseBuckets.set(key, []);
+  coarseBuckets.get(key).push(project.delivery_signal_score);
+});
+assert.ok([...coarseBuckets.values()].some((scores) => new Set(scores).size > 1), "AI tie-breaker should resolve at least one empirical-score tie");
 
 for (let index = 0; index < sourceData.projects.length; index += 1) {
   const sourceProject = sourceData.projects[index];
@@ -85,8 +106,15 @@ assert.match(permanentProject, /Withheld/);
 assert.doesNotMatch(permanentProject, /Within 5 years/);
 assert.match(permanentProject, /On this page/);
 assert.match(permanentProject, /class="page-hero"/);
-assert.match(forecasting, /0\.767/);
-assert.match(forecasting, /Renewable Project Delivery Signal/);
+assert.match(forecasting, /0\.791/);
+assert.match(forecasting, /UK Renewable Delivery Outlook/);
+assert.match(forecasting, /Project Delivery Rankings/);
+assert.match(forecasting, /Delivery Scenario Lab/);
+assert.match(forecasting, /Forecast Project Map/);
+assert.match(forecasting, /Forecast Model Evidence/);
+assert.match(forecasting, /External Driver Register/);
+assert.match(forecasting, /Elexon Insights market-index price API/);
+assert.match(forecasting, /Open forecast explorer/);
 assert.match(forecasting, /Horizon Release Matrix/);
 assert.match(forecasting, /Ranking &amp; Reliability Evidence/);
 assert.match(forecasting, /Delivery-Signal Usage/);
@@ -94,10 +122,20 @@ assert.match(forecasting, /Temporal Validation Controls/);
 assert.match(forecasting, /Macroeconomic &amp; Policy Scenarios/);
 assert.doesNotMatch(forecasting, /Probability of what gets built/);
 assert.match(forecasting, /class="page-hero"/);
+assert.match(forecasting, /forecast-data\.json/);
+assert.match(forecasting, /forecasting\.[a-f0-9]{10}\.js/);
+assert.match(forecasting, /forecasting\.[a-f0-9]{10}\.css/);
+assert.equal(forecastData.projects.length, 6_189);
+assert.ok(forecastData.projects.every((project) => Number.isFinite(project.signal)));
+assert.ok(forecastData.projects.every((project) => Number.isFinite(project.p2) && Number.isFinite(project.p3)));
 assert.doesNotMatch(html, /Capacity × probability/);
 assert.doesNotMatch(html, /risk-adjusted capacity expected/);
 assert.match(html, /Probability release withheld/);
 assert.match(html, /Portfolio delivery-conditions index/);
+assert.match(html, /Electricity-price outlook/);
+assert.match(html, /Construction &amp; materials shock/);
+assert.match(html, /Developer market stress/);
+assert.match(html, /scenario-drivers/);
 assert.match(about, /Engineering portfolio case study/);
 assert.match(about, /UK Renewable Intelligence Platform/);
 assert.match(about, /Engineering Capabilities/);
@@ -119,13 +157,15 @@ assert.match(sitemap, new RegExp(`<loc>https://uk-renewable-intelligence.github.
 assert.match(robots, /Sitemap: https:\/\/uk-renewable-intelligence\.github\.io\/sitemap\.xml/);
 assert.doesNotMatch(forecasting, /\/Users\/|wenpc/);
 
-const [summarySize, indexSize, detailsSize] = await Promise.all([
+const [summarySize, indexSize, detailsSize, forecastSize] = await Promise.all([
   stat(resolve(output, "dashboard-summary.json")),
   stat(resolve(output, "projects-index.json")),
   stat(resolve(output, "project-details.json")),
+  stat(resolve(output, "forecast-data.json")),
 ]);
 assert.ok(summarySize.size < 500_000, "Overview payload should stay below 500 KB");
 assert.ok(indexSize.size < 8_000_000, "Explorer payload should stay below 8 MB");
 assert.ok(detailsSize.size < 4_000_000, "Lazy evidence payload should stay below 4 MB");
+assert.ok(forecastSize.size < 5_000_000, "Forecast workbench payload should stay below 5 MB");
 
 console.log(`Static dashboard smoke test passed: ${projectIndex.length.toLocaleString()} projects, all source fields retained`);

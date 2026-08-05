@@ -1,0 +1,136 @@
+{
+  "version": "1.0",
+  "principle": "Every external feature must be dated, source-linked and available at the forecast origin. Revisions and publication lags are retained so future information cannot leak into historical tests.",
+  "drivers": [
+    {
+      "category": "Project delivery",
+      "variable": "Planning stage, stage age and milestone history",
+      "source": "DESNZ Renewable Energy Planning Database",
+      "source_url": "https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract",
+      "status": "Live in AI challenger",
+      "treatment": "Trained feature",
+      "priority": 1,
+      "reason": "The strongest project-specific evidence and observable for every historical forecast origin."
+    },
+    {
+      "category": "Project delivery",
+      "variable": "Capacity revisions, data completeness and observation count",
+      "source": "Derived from dated DESNZ REPD snapshots",
+      "source_url": "https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract",
+      "status": "Live in AI challenger",
+      "treatment": "Trained feature",
+      "priority": 1,
+      "reason": "Captures project churn and how much public evidence is available without using future records."
+    },
+    {
+      "category": "Developer",
+      "variable": "Prior portfolio size and delivery track record",
+      "source": "Derived from dated DESNZ REPD snapshots",
+      "source_url": "https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract",
+      "status": "Live in AI challenger",
+      "treatment": "Trained feature",
+      "priority": 1,
+      "reason": "Uses only projects and operational outcomes observed before each forecast date."
+    },
+    {
+      "category": "Revenue",
+      "variable": "Wholesale electricity price level and volatility",
+      "source": "Elexon Insights market-index price API",
+      "source_url": "https://bmrs.elexon.co.uk/api-documentation/endpoint/balancing/pricing/market-index",
+      "status": "Scenario-ready",
+      "treatment": "Manual stress input until dated history is archived",
+      "priority": 2,
+      "reason": "Project economics depend on expected captured revenue, but a single spot price is too noisy to use directly."
+    },
+    {
+      "category": "Finance",
+      "variable": "Bank Rate, gilt yields and credit conditions",
+      "source": "Bank of England statistical database",
+      "source_url": "https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp",
+      "status": "Bank Rate live; yield curve next",
+      "treatment": "Live context and manual stress input",
+      "priority": 2,
+      "reason": "Financing conditions matter most for large, early-stage and capital-intensive projects."
+    },
+    {
+      "category": "Costs",
+      "variable": "Infrastructure construction prices",
+      "source": "Office for National Statistics Construction Output Price Indices",
+      "source_url": "https://www.ons.gov.uk/businessindustryandtrade/constructionindustry/datasets/interimconstructionoutputpriceindices",
+      "status": "Live context",
+      "treatment": "Manual stress input",
+      "priority": 2,
+      "reason": "A broad UK infrastructure-cost measure that can be archived with its publication vintage."
+    },
+    {
+      "category": "Costs",
+      "variable": "Copper, aluminium, iron ore and energy prices",
+      "source": "World Bank Commodity Markets Pink Sheet",
+      "source_url": "https://www.worldbank.org/en/research/commodity-markets",
+      "status": "Next ingestion",
+      "treatment": "Technology-weighted scenario input",
+      "priority": 2,
+      "reason": "Material exposure differs between solar, wind, storage and grid-connected infrastructure."
+    },
+    {
+      "category": "Grid",
+      "variable": "Connection agreement, queue position and target connection date",
+      "source": "National Energy System Operator connections registers",
+      "source_url": "https://www.neso.energy/industry-information/connections/reports-and-registers",
+      "status": "Next ingestion",
+      "treatment": "Project-match feature after entity-resolution QA",
+      "priority": 1,
+      "reason": "Connection readiness is likely to add more project-level signal than broad market sentiment."
+    },
+    {
+      "category": "Support",
+      "variable": "CfD award, strike price, delivery year and allocation round",
+      "source": "DESNZ allocation results and Low Carbon Contracts Company register",
+      "source_url": "https://www.lowcarboncontracts.uk/our-schemes/contracts-for-difference/register/",
+      "status": "Award flag live; contract detail next",
+      "treatment": "Project-match feature and scenario input",
+      "priority": 1,
+      "reason": "A project-specific support contract is more informative than generic political sentiment."
+    },
+    {
+      "category": "Policy and news",
+      "variable": "Dated policy events, planning reform and technology-specific support",
+      "source": "GOV.UK Content API and UK Parliament APIs",
+      "source_url": "https://content-api.publishing.service.gov.uk/",
+      "status": "Research pipeline",
+      "treatment": "Source-linked event features; no free-form LLM probability adjustment",
+      "priority": 2,
+      "reason": "Events need effective dates, topic labels and publication-time controls before they can enter a backtest."
+    },
+    {
+      "category": "Developer finance",
+      "variable": "Accounts recency, insolvency flags and filing status",
+      "source": "Companies House API",
+      "source_url": "https://developer.company-information.service.gov.uk/",
+      "status": "Research pipeline",
+      "treatment": "Entity-linked feature for UK companies",
+      "priority": 3,
+      "reason": "Broader coverage than stock prices, but operator-to-company matching and filing lags require QA."
+    },
+    {
+      "category": "Markets",
+      "variable": "Developer share return, volatility and drawdown",
+      "source": "Licensed market-data provider",
+      "source_url": "https://www.londonstockexchange.com/",
+      "status": "Research only",
+      "treatment": "Publicly listed developers only; never imputed to private firms",
+      "priority": 4,
+      "reason": "Stock prices can reflect financing stress but cover only a biased subset of developers and are not project economics."
+    },
+    {
+      "category": "System value",
+      "variable": "Curtailment, negative-price hours and regional constraint exposure",
+      "source": "Elexon Insights and NESO data",
+      "source_url": "https://bmrs.elexon.co.uk/",
+      "status": "Research pipeline",
+      "treatment": "Regional scenario and portfolio-risk feature",
+      "priority": 3,
+      "reason": "More decision-relevant than headline power prices for technologies exposed to capture-price erosion."
+    }
+  ]
+}

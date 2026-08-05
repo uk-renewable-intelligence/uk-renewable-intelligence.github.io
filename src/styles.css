@@ -359,6 +359,12 @@ input[type="range"] { width: 100%; accent-color: var(--teal); }
 #reference-bar { width: 100%; background: rgba(255,255,255,.2); }
 #scenario-bar { top: 3px; width: 100%; height: 3px; background: #65d0c3; transition: width .25s ease; }
 .scenario-note { min-height: 38px; color: #b6c7cd; font-size: 10px; line-height: 1.5; }
+.scenario-drivers { display: flex; flex-wrap: wrap; gap: 6px; min-height: 27px; margin-top: 12px; }
+.scenario-drivers > span { padding: 6px 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 4px; color: #b6c7cd; background: rgba(255,255,255,.04); font-size: 8px; text-transform: uppercase; }
+.scenario-drivers > span strong { margin-left: 3px; color: white; }
+.scenario-drivers > span.positive { border-color: rgba(101,208,195,.28); }
+.scenario-drivers > span.negative { border-color: rgba(235,150,126,.28); }
+.scenario-disclaimer { max-width: 900px; margin: 12px 0 0 auto; }
 .macro-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 26px; }
 .macro-card { padding-top: 11px; border-top: 1px solid rgba(255,255,255,.13); }
 .macro-card strong, .macro-card span, .macro-card small { display: block; }

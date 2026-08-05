@@ -1,0 +1,734 @@
+{
+  "source": "/Users/wenpc/Code/offshore-energy-dashboard/data/processed/repd_panel.csv.gz",
+  "latest_snapshot": "2026-05-06",
+  "panel_rows": 103579,
+  "projects": 19145,
+  "snapshots": 15,
+  "features": [
+    "log_capacity_mw",
+    "project_age_years",
+    "stage_rank",
+    "planning_reference_present",
+    "planning_granted_flag",
+    "under_construction_flag",
+    "data_completeness",
+    "cfd_flag",
+    "months_in_current_stage",
+    "stage_changes_count",
+    "capacity_revision_count",
+    "capacity_change_pct_from_first",
+    "months_since_planning_submitted",
+    "months_since_planning_granted",
+    "months_since_construction_started",
+    "observations_to_date",
+    "developer_projects_prior",
+    "developer_operations_prior",
+    "developer_completion_rate_prior",
+    "technology_region_projects_prior",
+    "technology_region_operations_prior",
+    "technology_region_completion_rate_prior",
+    "operator_active_projects",
+    "operator_active_capacity_mw",
+    "technology_region_active_projects",
+    "technology_region_active_capacity_mw",
+    "authority_active_projects",
+    "authority_active_capacity_mw",
+    "technology",
+    "region",
+    "country",
+    "stage",
+    "planning_authority"
+  ],
+  "method": "Direct-horizon CatBoost and regularised logistic challengers evaluated on fully observed, project-purged rolling origin cohorts. External macro and news variables remain outside the trained model until a sufficiently long dated feature history exists.",
+  "promotion_rule": "Promote the richer ranker only if latest-cohort ROC-AUC improves by at least 0.02, latest ROC-AUC is at least 0.65, and median rolling-cohort AUC does not fall below the current empirical model.",
+  "horizons": {
+    "2": {
+      "horizon_years": 2,
+      "rolling_cohorts": 8,
+      "latest_test_cohort": "2024-03-27",
+      "ensemble_empirical_weight": 0.2,
+      "ensemble_catboost_weight": 0.8,
+      "ensemble_weight_selection": "Highest median AUC on rolling cohorts before the final test cohort.",
+      "cohorts": [
+        {
+          "origin": "2020-09-28",
+          "train_rows": 759,
+          "test_rows": 3349,
+          "event_rate": 0.0074649148999701405,
+          "models": {
+            "empirical_survival": {
+              "rows": 3349,
+              "events": 25,
+              "event_rate": 0.0074649148999701405,
+              "mean_prediction": 0.23359063490970342,
+              "roc_auc": 0.49829723225030087,
+              "average_precision": 0.009109710828970642,
+              "brier_score": 0.0592530779426987
+            },
+            "richer_logistic": {
+              "rows": 3349,
+              "events": 25,
+              "event_rate": 0.0074649148999701405,
+              "mean_prediction": 0.33354728599549416,
+              "roc_auc": 0.5112575210589652,
+              "average_precision": 0.014905652448910352,
+              "brier_score": 0.15625415912572158
+            },
+            "richer_catboost": {
+              "rows": 3349,
+              "events": 25,
+              "event_rate": 0.0074649148999701405,
+              "mean_prediction": 0.41736112305840634,
+              "roc_auc": 0.6084296028880867,
+              "average_precision": 0.026852564992995924,
+              "brier_score": 0.21241848991917395
+            }
+          }
+        },
+        {
+          "origin": "2021-03-10",
+          "train_rows": 2753,
+          "test_rows": 1222,
+          "event_rate": 0.0220949263502455,
+          "models": {
+            "empirical_survival": {
+              "rows": 1222,
+              "events": 27,
+              "event_rate": 0.0220949263502455,
+              "mean_prediction": 0.08392100913725442,
+              "roc_auc": 0.5083836975050364,
+              "average_precision": 0.023981757317582515,
+              "brier_score": 0.028858184839856766
+            },
+            "richer_logistic": {
+              "rows": 1222,
+              "events": 27,
+              "event_rate": 0.0220949263502455,
+              "mean_prediction": 0.4507003567915613,
+              "roc_auc": 0.5626530295986363,
+              "average_precision": 0.027631595139843416,
+              "brier_score": 0.29382184232055947
+            },
+            "richer_catboost": {
+              "rows": 1222,
+              "events": 27,
+              "event_rate": 0.0220949263502455,
+              "mean_prediction": 0.29416751822579884,
+              "roc_auc": 0.6190918952425227,
+              "average_precision": 0.043785317684790624,
+              "brier_score": 0.16007577852362082
+            }
+          }
+        },
+        {
+          "origin": "2021-12-02",
+          "train_rows": 6237,
+          "test_rows": 1767,
+          "event_rate": 0.0005659309564233164,
+          "models": {
+            "empirical_survival": {
+              "rows": 1767,
+              "events": 1,
+              "event_rate": 0.0005659309564233164,
+              "mean_prediction": 0.03831961646209532,
+              "roc_auc": 0.844563986409966,
+              "average_precision": 0.0035842293906810036,
+              "brier_score": 0.002151220945465825
+            },
+            "richer_logistic": {
+              "rows": 1767,
+              "events": 1,
+              "event_rate": 0.0005659309564233164,
+              "mean_prediction": 0.05340879520385564,
+              "roc_auc": 0.9954699886749716,
+              "average_precision": 0.1111111111111111,
+              "brier_score": 0.004719693957334149
+            },
+            "richer_catboost": {
+              "rows": 1767,
+              "events": 1,
+              "event_rate": 0.0005659309564233164,
+              "mean_prediction": 0.059047109127116325,
+              "roc_auc": 0.986409966024915,
+              "average_precision": 0.04,
+              "brier_score": 0.012426982874924265
+            }
+          }
+        },
+        {
+          "origin": "2022-06-11",
+          "train_rows": 4064,
+          "test_rows": 1799,
+          "event_rate": 0.028349082823790995,
+          "models": {
+            "empirical_survival": {
+              "rows": 1799,
+              "events": 51,
+              "event_rate": 0.028349082823790995,
+              "mean_prediction": 0.05744955777939989,
+              "roc_auc": 0.5998283752860413,
+              "average_precision": 0.03924406920246168,
+              "brier_score": 0.028521603396709654
+            },
+            "richer_logistic": {
+              "rows": 1799,
+              "events": 51,
+              "event_rate": 0.028349082823790995,
+              "mean_prediction": 0.6991454473905818,
+              "roc_auc": 0.5920940458563287,
+              "average_precision": 0.04097585625068631,
+              "brier_score": 0.632701954430711
+            },
+            "richer_catboost": {
+              "rows": 1799,
+              "events": 51,
+              "event_rate": 0.028349082823790995,
+              "mean_prediction": 0.33403792304659197,
+              "roc_auc": 0.5767263427109974,
+              "average_precision": 0.034212294278061786,
+              "brier_score": 0.18752841287210276
+            }
+          }
+        },
+        {
+          "origin": "2023-03-13",
+          "train_rows": 3434,
+          "test_rows": 4035,
+          "event_rate": 0.01288723667905824,
+          "models": {
+            "empirical_survival": {
+              "rows": 4035,
+              "events": 52,
+              "event_rate": 0.01288723667905824,
+              "mean_prediction": 0.08422485080552253,
+              "roc_auc": 0.516872187566388,
+              "average_precision": 0.014420574514010043,
+              "brier_score": 0.017957926035847765
+            },
+            "richer_logistic": {
+              "rows": 4035,
+              "events": 52,
+              "event_rate": 0.01288723667905824,
+              "mean_prediction": 0.3477434123090198,
+              "roc_auc": 0.6271702813882076,
+              "average_precision": 0.030078661451163342,
+              "brier_score": 0.22538480119661708
+            },
+            "richer_catboost": {
+              "rows": 4035,
+              "events": 52,
+              "event_rate": 0.01288723667905824,
+              "mean_prediction": 0.2620728765403528,
+              "roc_auc": 0.6488682670580738,
+              "average_precision": 0.026303619771428706,
+              "brier_score": 0.12597518181035
+            }
+          }
+        },
+        {
+          "origin": "2023-06-19",
+          "train_rows": 4934,
+          "test_rows": 2921,
+          "event_rate": 0.015748031496062992,
+          "models": {
+            "empirical_survival": {
+              "rows": 2921,
+              "events": 46,
+              "event_rate": 0.015748031496062992,
+              "mean_prediction": 0.058295989337991704,
+              "roc_auc": 0.7579962192816634,
+              "average_precision": 0.042395342251572404,
+              "brier_score": 0.017132180682474383
+            },
+            "richer_logistic": {
+              "rows": 2921,
+              "events": 46,
+              "event_rate": 0.015748031496062992,
+              "mean_prediction": 0.30596484146347475,
+              "roc_auc": 0.6457618147448015,
+              "average_precision": 0.03772540162186333,
+              "brier_score": 0.18834329025483754
+            },
+            "richer_catboost": {
+              "rows": 2921,
+              "events": 46,
+              "event_rate": 0.015748031496062992,
+              "mean_prediction": 0.2775527013697807,
+              "roc_auc": 0.6681663516068053,
+              "average_precision": 0.10275481685196085,
+              "brier_score": 0.13640199332426908
+            }
+          }
+        },
+        {
+          "origin": "2023-12-16",
+          "train_rows": 3879,
+          "test_rows": 3691,
+          "event_rate": 0.01679761582227039,
+          "models": {
+            "empirical_survival": {
+              "rows": 3691,
+              "events": 62,
+              "event_rate": 0.01679761582227039,
+              "mean_prediction": 0.07996977503171918,
+              "roc_auc": 0.7474466439701686,
+              "average_precision": 0.04372756258696331,
+              "brier_score": 0.020519196214624717
+            },
+            "richer_logistic": {
+              "rows": 3691,
+              "events": 62,
+              "event_rate": 0.01679761582227039,
+              "mean_prediction": 0.5033470619293772,
+              "roc_auc": 0.6165299247104419,
+              "average_precision": 0.036200874614146034,
+              "brier_score": 0.41313771727227966
+            },
+            "richer_catboost": {
+              "rows": 3691,
+              "events": 62,
+              "event_rate": 0.01679761582227039,
+              "mean_prediction": 0.37676186945760576,
+              "roc_auc": 0.604396483524298,
+              "average_precision": 0.07667936288083195,
+              "brier_score": 0.22422453587442845
+            }
+          }
+        },
+        {
+          "origin": "2024-03-27",
+          "train_rows": 3687,
+          "test_rows": 4019,
+          "event_rate": 0.01567554117939786,
+          "models": {
+            "empirical_survival": {
+              "rows": 4019,
+              "events": 63,
+              "event_rate": 0.01567554117939786,
+              "mean_prediction": 0.08877618517740546,
+              "roc_auc": 0.766639382412891,
+              "average_precision": 0.04251251373181576,
+              "brier_score": 0.020670480399257323
+            },
+            "richer_logistic": {
+              "rows": 4019,
+              "events": 63,
+              "event_rate": 0.01567554117939786,
+              "mean_prediction": 0.4773457238466392,
+              "roc_auc": 0.6192522509509365,
+              "average_precision": 0.03339850378861907,
+              "brier_score": 0.3740646360918111
+            },
+            "richer_catboost": {
+              "rows": 4019,
+              "events": 63,
+              "event_rate": 0.01567554117939786,
+              "mean_prediction": 0.2749760598645144,
+              "roc_auc": 0.6612058035212737,
+              "average_precision": 0.08825453725328158,
+              "brier_score": 0.12297041990229672
+            }
+          }
+        }
+      ],
+      "latest_cohort": {
+        "empirical_survival": {
+          "rows": 4019,
+          "events": 63,
+          "event_rate": 0.01567554117939786,
+          "mean_prediction": 0.08877618517740546,
+          "roc_auc": 0.766639382412891,
+          "average_precision": 0.04251251373181576,
+          "brier_score": 0.020670480399257323
+        },
+        "richer_logistic": {
+          "rows": 4019,
+          "events": 63,
+          "event_rate": 0.01567554117939786,
+          "mean_prediction": 0.4773457238466392,
+          "roc_auc": 0.6192522509509365,
+          "average_precision": 0.03339850378861907,
+          "brier_score": 0.3740646360918111
+        },
+        "richer_catboost": {
+          "rows": 4019,
+          "events": 63,
+          "event_rate": 0.01567554117939786,
+          "mean_prediction": 0.2749760598645144,
+          "roc_auc": 0.6612058035212737,
+          "average_precision": 0.08825453725328158,
+          "brier_score": 0.12297041990229672
+        },
+        "enriched_ensemble": {
+          "rows": 4019,
+          "events": 63,
+          "event_rate": 0.01567554117939786,
+          "mean_prediction": 0.5001244090569794,
+          "roc_auc": 0.7004871041777007,
+          "average_precision": 0.07555061012480976,
+          "brier_score": 0.3063895705791562
+        },
+        "enriched_tiebreak": {
+          "rows": 4019,
+          "events": 63,
+          "event_rate": 0.01567554117939786,
+          "mean_prediction": 0.08878446677220385,
+          "roc_auc": 0.7911550869083731,
+          "average_precision": 0.07266644203851855,
+          "brier_score": 0.020671628806194994
+        }
+      },
+      "pooled_rolling": {
+        "empirical_survival": {
+          "rows": 22803,
+          "events": 327,
+          "event_rate": 0.0143402183923168,
+          "mean_prediction": 0.09726785124495063,
+          "roc_auc": 0.5890356441366202,
+          "average_precision": 0.017395140946203723,
+          "brier_score": 0.02500237587627374
+        },
+        "richer_logistic": {
+          "rows": 22803,
+          "events": 327,
+          "event_rate": 0.0143402183923168,
+          "mean_prediction": 0.39876841372107824,
+          "roc_auc": 0.644372073670971,
+          "average_precision": 0.026858195292775947,
+          "brier_score": 0.28578483076958855
+        },
+        "richer_catboost": {
+          "rows": 22803,
+          "events": 327,
+          "event_rate": 0.0143402183923168,
+          "mean_prediction": 0.29936578152383114,
+          "roc_auc": 0.6421334642783088,
+          "average_precision": 0.047868809607439486,
+          "brier_score": 0.15326470982751747
+        },
+        "enriched_ensemble": {
+          "rows": 22803,
+          "events": 327,
+          "event_rate": 0.0143402183923168,
+          "mean_prediction": 0.5001754155155024,
+          "roc_auc": 0.6478972745920487,
+          "average_precision": 0.05441142766880605,
+          "brier_score": 0.31262401021854186
+        },
+        "enriched_tiebreak": {
+          "rows": 22803,
+          "events": 327,
+          "event_rate": 0.0143402183923168,
+          "mean_prediction": 0.09728130126476692,
+          "roc_auc": 0.5914910665158024,
+          "average_precision": 0.020257860158757655,
+          "brier_score": 0.025005066171110396
+        }
+      },
+      "median_cohort_auc": {
+        "empirical_survival": 0.6736375096281049,
+        "richer_logistic": 0.6178910878306891,
+        "richer_catboost": 0.6339800811502982,
+        "enriched_ensemble": 0.6408177716347292,
+        "enriched_tiebreak": 0.684508196859827
+      },
+      "catboost_auc_lift_latest": -0.10543357889161731,
+      "catboost_ap_lift_latest": 0.04574202352146582,
+      "tiebreak_auc_lift_latest": 0.024515704495482127,
+      "tiebreak_ap_lift_latest": 0.030153928306702785,
+      "ranking_promotion_passed": true
+    },
+    "3": {
+      "horizon_years": 3,
+      "rolling_cohorts": 5,
+      "latest_test_cohort": "2023-03-13",
+      "ensemble_empirical_weight": 0.0,
+      "ensemble_catboost_weight": 1.0,
+      "ensemble_weight_selection": "Highest median AUC on rolling cohorts before the final test cohort.",
+      "cohorts": [
+        {
+          "origin": "2020-09-28",
+          "train_rows": 759,
+          "test_rows": 3349,
+          "event_rate": 0.02030456852791878,
+          "models": {
+            "empirical_survival": {
+              "rows": 3349,
+              "events": 68,
+              "event_rate": 0.02030456852791878,
+              "mean_prediction": 0.23469101155042804,
+              "roc_auc": 0.45836993742940635,
+              "average_precision": 0.020544764875339263,
+              "brier_score": 0.0667381391158577
+            },
+            "richer_logistic": {
+              "rows": 3349,
+              "events": 68,
+              "event_rate": 0.02030456852791878,
+              "mean_prediction": 0.3331728709214793,
+              "roc_auc": 0.5260120659053015,
+              "average_precision": 0.027992560212205385,
+              "brier_score": 0.1586367941227391
+            },
+            "richer_catboost": {
+              "rows": 3349,
+              "events": 68,
+              "event_rate": 0.02030456852791878,
+              "mean_prediction": 0.40927140276003543,
+              "roc_auc": 0.6474689388099037,
+              "average_precision": 0.04844403471883253,
+              "brier_score": 0.20356930706314122
+            }
+          }
+        },
+        {
+          "origin": "2021-03-10",
+          "train_rows": 2753,
+          "test_rows": 1222,
+          "event_rate": 0.044189852700491,
+          "models": {
+            "empirical_survival": {
+              "rows": 1222,
+              "events": 54,
+              "event_rate": 0.044189852700491,
+              "mean_prediction": 0.08992232131375848,
+              "roc_auc": 0.5194935946220192,
+              "average_precision": 0.04964383193507842,
+              "brier_score": 0.04764391009375078
+            },
+            "richer_logistic": {
+              "rows": 1222,
+              "events": 54,
+              "event_rate": 0.044189852700491,
+              "mean_prediction": 0.43962872821017773,
+              "roc_auc": 0.584871258244546,
+              "average_precision": 0.05880011366627985,
+              "brier_score": 0.28106743436614545
+            },
+            "richer_catboost": {
+              "rows": 1222,
+              "events": 54,
+              "event_rate": 0.044189852700491,
+              "mean_prediction": 0.29740983580211566,
+              "roc_auc": 0.6176908929477423,
+              "average_precision": 0.08024147652412918,
+              "brier_score": 0.164999564718672
+            }
+          }
+        },
+        {
+          "origin": "2021-12-02",
+          "train_rows": 6237,
+          "test_rows": 1767,
+          "event_rate": 0.0005659309564233164,
+          "models": {
+            "empirical_survival": {
+              "rows": 1767,
+              "events": 1,
+              "event_rate": 0.0005659309564233164,
+              "mean_prediction": 0.053493143877422,
+              "roc_auc": 0.6928086070215176,
+              "average_precision": 0.0018281535648994515,
+              "brier_score": 0.003671103857323441
+            },
+            "richer_logistic": {
+              "rows": 1767,
+              "events": 1,
+              "event_rate": 0.0005659309564233164,
+              "mean_prediction": 0.06494859555452806,
+              "roc_auc": 0.986409966024915,
+              "average_precision": 0.04,
+              "brier_score": 0.006071894858009614
+            },
+            "richer_catboost": {
+              "rows": 1767,
+              "events": 1,
+              "event_rate": 0.0005659309564233164,
+              "mean_prediction": 0.07238508435753718,
+              "roc_auc": 0.9688561721404303,
+              "average_precision": 0.017857142857142856,
+              "brier_score": 0.01622773090118256
+            }
+          }
+        },
+        {
+          "origin": "2022-06-11",
+          "train_rows": 4064,
+          "test_rows": 1799,
+          "event_rate": 0.042801556420233464,
+          "models": {
+            "empirical_survival": {
+              "rows": 1799,
+              "events": 77,
+              "event_rate": 0.042801556420233464,
+              "mean_prediction": 0.06052955304781157,
+              "roc_auc": 0.6050952531788769,
+              "average_precision": 0.06127988983187903,
+              "brier_score": 0.04112372656025312
+            },
+            "richer_logistic": {
+              "rows": 1799,
+              "events": 77,
+              "event_rate": 0.042801556420233464,
+              "mean_prediction": 0.6903484273901186,
+              "roc_auc": 0.5369398313649185,
+              "average_precision": 0.0499810759046017,
+              "brier_score": 0.6190144801147165
+            },
+            "richer_catboost": {
+              "rows": 1799,
+              "events": 77,
+              "event_rate": 0.042801556420233464,
+              "mean_prediction": 0.3476045937863116,
+              "roc_auc": 0.5724542588654087,
+              "average_precision": 0.0547517116394774,
+              "brier_score": 0.20181226034126878
+            }
+          }
+        },
+        {
+          "origin": "2023-03-13",
+          "train_rows": 3434,
+          "test_rows": 4035,
+          "event_rate": 0.019083023543990087,
+          "models": {
+            "empirical_survival": {
+              "rows": 4035,
+              "events": 77,
+              "event_rate": 0.019083023543990087,
+              "mean_prediction": 0.10551568180534353,
+              "roc_auc": 0.6931465452182987,
+              "average_precision": 0.04737286927802645,
+              "brier_score": 0.02629149821504243
+            },
+            "richer_logistic": {
+              "rows": 4035,
+              "events": 77,
+              "event_rate": 0.019083023543990087,
+              "mean_prediction": 0.43905974616386295,
+              "roc_auc": 0.6205515050891504,
+              "average_precision": 0.06439382361257287,
+              "brier_score": 0.32160680344093673
+            },
+            "richer_catboost": {
+              "rows": 4035,
+              "events": 77,
+              "event_rate": 0.019083023543990087,
+              "mean_prediction": 0.27000385676515154,
+              "roc_auc": 0.6249351961833013,
+              "average_precision": 0.04808433244444368,
+              "brier_score": 0.13055160694027662
+            }
+          }
+        }
+      ],
+      "latest_cohort": {
+        "empirical_survival": {
+          "rows": 4035,
+          "events": 77,
+          "event_rate": 0.019083023543990087,
+          "mean_prediction": 0.10551568180534353,
+          "roc_auc": 0.6931465452182987,
+          "average_precision": 0.04737286927802645,
+          "brier_score": 0.02629149821504243
+        },
+        "richer_logistic": {
+          "rows": 4035,
+          "events": 77,
+          "event_rate": 0.019083023543990087,
+          "mean_prediction": 0.43905974616386295,
+          "roc_auc": 0.6205515050891504,
+          "average_precision": 0.06439382361257287,
+          "brier_score": 0.32160680344093673
+        },
+        "richer_catboost": {
+          "rows": 4035,
+          "events": 77,
+          "event_rate": 0.019083023543990087,
+          "mean_prediction": 0.27000385676515154,
+          "roc_auc": 0.6249351961833013,
+          "average_precision": 0.04808433244444368,
+          "brier_score": 0.13055160694027662
+        },
+        "enriched_ensemble": {
+          "rows": 4035,
+          "events": 77,
+          "event_rate": 0.019083023543990087,
+          "mean_prediction": 0.5001239157372985,
+          "roc_auc": 0.6249351961833013,
+          "average_precision": 0.04808433244444368,
+          "brier_score": 0.3287752370769526
+        },
+        "enriched_tiebreak": {
+          "rows": 4035,
+          "events": 77,
+          "event_rate": 0.019083023543990087,
+          "mean_prediction": 0.10553230190003042,
+          "roc_auc": 0.7159689729169264,
+          "average_precision": 0.10540583145980975,
+          "brier_score": 0.02629421321451155
+        }
+      },
+      "pooled_rolling": {
+        "empirical_survival": {
+          "rows": 12172,
+          "events": 277,
+          "event_rate": 0.022757147551758134,
+          "mean_prediction": 0.125290511138414,
+          "roc_auc": 0.5202736641157661,
+          "average_precision": 0.02392107922564881,
+          "brier_score": 0.038472026448328374
+        },
+        "richer_logistic": {
+          "rows": 12172,
+          "events": 277,
+          "event_rate": 0.022757147551758134,
+          "mean_prediction": 0.3928137788021469,
+          "roc_auc": 0.6405565849194896,
+          "average_precision": 0.03932840828026522,
+          "brier_score": 0.27084772988310396
+        },
+        "richer_catboost": {
+          "rows": 12172,
+          "events": 277,
+          "event_rate": 0.022757147551758134,
+          "mean_prediction": 0.293854372126378,
+          "roc_auc": 0.650678849075014,
+          "average_precision": 0.04700744474974965,
+          "brier_score": 0.1480359405439554
+        },
+        "enriched_ensemble": {
+          "rows": 12172,
+          "events": 277,
+          "event_rate": 0.022757147551758134,
+          "mean_prediction": 0.5002053894183371,
+          "roc_auc": 0.6150747439615286,
+          "average_precision": 0.04055679630706169,
+          "brier_score": 0.32841101067952727
+        },
+        "enriched_tiebreak": {
+          "rows": 12172,
+          "events": 277,
+          "event_rate": 0.022757147551758134,
+          "mean_prediction": 0.1253245234511369,
+          "roc_auc": 0.5249214319641022,
+          "average_precision": 0.03565319263286555,
+          "brier_score": 0.03848271379300607
+        }
+      },
+      "median_cohort_auc": {
+        "empirical_survival": 0.6050952531788769,
+        "richer_logistic": 0.584871258244546,
+        "richer_catboost": 0.6249351961833013,
+        "enriched_ensemble": 0.6249351961833013,
+        "enriched_tiebreak": 0.6176297570025793
+      },
+      "catboost_auc_lift_latest": -0.06821134903499737,
+      "catboost_ap_lift_latest": 0.0007114631664172297,
+      "tiebreak_auc_lift_latest": 0.022822427698627745,
+      "tiebreak_ap_lift_latest": 0.058032962181783304,
+      "ranking_promotion_passed": true
+    }
+  },
+  "two_year_decision": "promote empirical ranking with AI tie-breaker"
+}
