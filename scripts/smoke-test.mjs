@@ -141,6 +141,7 @@ assert.match(about, /UK Renewable Intelligence Platform/);
 assert.match(about, /Engineering Capabilities/);
 assert.match(about, /Formula Student Telemetry Debrief/);
 assert.match(about, /Post-run review, not just charts/);
+assert.match(about, /https:\/\/imperial-fs-telemetry\.streamlit\.app\//);
 assert.match(about, /class="page-hero"/);
 assert.match(directory, /13,009 source-backed planning records/);
 assert.match(directory, /class="page-hero"/);

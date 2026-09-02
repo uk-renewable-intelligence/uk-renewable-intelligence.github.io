@@ -2,7 +2,7 @@
 
 [Live dashboard](https://uk-renewable-intelligence.github.io/) · [Modelling workspace](https://uk-renewable-project-screening.streamlit.app/)
 
-**Portfolio review path:** the live [About page](https://uk-renewable-intelligence.github.io/about/) explains the engineering decisions behind this system and links to the related [Formula Student EV telemetry debrief](https://github.com/hj-nakamura421/imperial-fs-telemetry).
+**Portfolio review path:** the live [About page](https://uk-renewable-intelligence.github.io/about/) explains the engineering decisions behind this system and links to the related [Formula Student EV telemetry debrief](https://imperial-fs-telemetry.streamlit.app/) and its [source](https://github.com/hj-nakamura421/imperial-fs-telemetry).
 
 A public decision-support dashboard for exploring the UK renewable project pipeline. It combines 13,009 Renewable Energy Planning Database records with an audited relative delivery signal, project screening, geospatial analysis and bounded macroeconomic scenarios.
 
