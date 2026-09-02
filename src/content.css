@@ -154,6 +154,8 @@ h3 { font-size: 20px; font-weight: 700; }
 
 @media (max-width: 800px) {
   .site-nav { overflow-x: auto; }
+  .footer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .footer-brand { grid-column: 1 / -1; }
 }
 
 @media (max-width: 760px) {
