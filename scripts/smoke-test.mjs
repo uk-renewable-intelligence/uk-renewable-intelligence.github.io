@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const output = resolve(root, "dist-static");
-const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, forecastData, about, directory, challenger, driverRegistry] = await Promise.all([
+const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, forecastData, dataPage, datasetCsv, about, directory, challenger, driverRegistry] = await Promise.all([
   readFile(resolve(output, "index.html"), "utf8"),
   readFile(resolve(output, "404.html"), "utf8"),
   readFile(resolve(output, "dashboard-summary.json"), "utf8").then(JSON.parse),
@@ -14,6 +14,8 @@ const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, f
   readFile(resolve(output, "robots.txt"), "utf8"),
   readFile(resolve(output, "forecasting/index.html"), "utf8"),
   readFile(resolve(output, "forecast-data.json"), "utf8").then(JSON.parse),
+  readFile(resolve(output, "data/index.html"), "utf8"),
+  readFile(resolve(output, "uk-renewable-energy-projects.csv"), "utf8"),
   readFile(resolve(output, "about/index.html"), "utf8"),
   readFile(resolve(output, "projects/index.html"), "utf8"),
   readFile(resolve(output, "forecast-challenger.json"), "utf8").then(JSON.parse),
@@ -30,7 +32,11 @@ try {
   };
 }
 
-assert.match(html, /UK Renewable Infrastructure Intelligence/);
+assert.match(html, /UK Renewable Energy Project Intelligence/);
+assert.match(html, /<title>UK Renewable Energy Project Database &amp; Forecasting<\/title>/);
+assert.match(html, /name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/);
+assert.match(html, /hreflang="en-GB"/);
+assert.match(html, /property="og:site_name" content="UK Renewable Intelligence"/);
 assert.match(html, /Scenario lab/);
 assert.match(html, /Evidence &amp; methodology/);
 assert.match(html, /Copy view link/);
@@ -122,6 +128,7 @@ assert.match(forecasting, /Temporal Validation Controls/);
 assert.match(forecasting, /Macroeconomic &amp; Policy Scenarios/);
 assert.doesNotMatch(forecasting, /Probability of what gets built/);
 assert.match(forecasting, /class="page-hero"/);
+assert.match(forecasting, /<title>UK Renewable Energy Forecasting &amp; Project Rankings<\/title>/);
 assert.match(forecasting, /forecast-data\.json/);
 assert.match(forecasting, /forecasting\.[a-f0-9]{10}\.js/);
 assert.match(forecasting, /forecasting\.[a-f0-9]{10}\.css/);
@@ -144,6 +151,7 @@ assert.match(about, /Post-run review, not just charts/);
 assert.match(about, /https:\/\/imperial-fs-telemetry\.streamlit\.app\//);
 assert.match(about, /class="page-hero"/);
 assert.match(directory, /13,009 source-backed planning records/);
+assert.match(directory, /<title>UK Renewable Energy Project Database \| Renewable Intelligence<\/title>/);
 assert.match(directory, /class="page-hero"/);
 assert.equal((directory.match(/class="pagination(?: pagination-top)?"/g) || []).length, 2);
 assert.equal((directory.match(/aria-label="Project directory page 27"/g) || []).length, 2);
@@ -155,7 +163,15 @@ assert.match(contentStyles, /\.status-pill \{[^}]*font-size: 11px;/);
 assert.match(contentStyles, /@media \(max-width: 1050px\)[\s\S]*?\.status-pill \{ display: none; \}/);
 assert.match(contentStyles, /@media \(max-width: 590px\)[\s\S]*?\.site-nav a \{ padding: 3px 9px 0; font-size: 10px;/);
 assert.doesNotMatch(contentStyles, /min\(1120px, 92vw\)/);
-assert.equal((sitemap.match(/<url>/g) || []).length, 13_039);
+assert.match(dataPage, /<h1>UK Renewable Energy Project Database<\/h1>/);
+assert.match(dataPage, /class="active" aria-current="page" href="\/data\/">Data<\/a>/);
+assert.match(dataPage, /Download project data \(CSV\)/);
+assert.match(dataPage, /"@type":"Dataset"/);
+assert.match(dataPage, /uk-renewable-energy-projects\.csv/);
+assert.equal(datasetCsv.trim().split("\n").length, 13_010);
+assert.match(datasetCsv.split("\n")[0], /"ref_id","site_name","operator","technology"/);
+assert.equal((sitemap.match(/<url>/g) || []).length, 13_040);
+assert.match(sitemap, /<loc>https:\/\/uk-renewable-intelligence\.github\.io\/data\/<\/loc><lastmod>2026-09-12<\/lastmod>/);
 assert.match(sitemap, new RegExp(`<loc>https://uk-renewable-intelligence.github.io/projects/${forecastProject.ref_id}/</loc>`));
 assert.match(robots, /Sitemap: https:\/\/uk-renewable-intelligence\.github\.io\/sitemap\.xml/);
 assert.doesNotMatch(forecasting, /\/Users\/|wenpc/);
