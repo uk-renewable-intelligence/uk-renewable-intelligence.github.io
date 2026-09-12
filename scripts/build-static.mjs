@@ -7,6 +7,9 @@ const output = resolve(process.env.STATIC_OUT || resolve(root, "dist-static"));
 const publicOrigin = "https://uk-renewable-intelligence.github.io";
 const repdSource = "https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract";
 const githubSource = "https://github.com/uk-renewable-intelligence/uk-renewable-intelligence.github.io";
+const authorUrl = "https://github.com/hj-nakamura421";
+const siteLastModified = "2026-09-12";
+const publicDatasetCsv = "uk-renewable-energy-projects.csv";
 
 const [template, styles, app, contentStyles, forecastingStyles, forecastingApp, forecastAudit, forecastChallenger, challengerScores, driverRegistry] = await Promise.all([
   readFile(resolve(root, "src/index.html"), "utf8"),
@@ -232,12 +235,15 @@ const jsonLd = (value) => JSON.stringify(value).replaceAll("<", "\\u003c");
 const projectPath = (project) => `/projects/${encodeURIComponent(String(project.ref_id))}/`;
 const projectUrl = (project) => `${publicOrigin}${projectPath(project)}`;
 const splitFactors = (value) => safeValue(value, "").split(/\s*·\s*|[;|]/).map((item) => item.trim()).filter(Boolean);
+const csvEscape = (value) => `"${String(value ?? "").replace(/\r?\n|\r/g, " ").replaceAll('"', '""')}"`;
 
 const headerMarkup = (canonicalPath) => {
   const activePage = canonicalPath.startsWith("/projects/")
     ? "projects"
     : canonicalPath.startsWith("/forecasting/")
       ? "forecasting"
+      : canonicalPath.startsWith("/data/")
+        ? "data"
       : canonicalPath.startsWith("/about/")
         ? "about"
         : "dashboard";
@@ -246,7 +252,7 @@ const headerMarkup = (canonicalPath) => {
   <header class="site-header">
     <div class="site-header-inner">
       <a class="brand" href="/" aria-label="UK Renewable Infrastructure Intelligence home"><span class="brand-mark">UK</span><span>Renewable Intelligence</span></a>
-      <nav class="site-nav" aria-label="Primary navigation">${navItem("dashboard", "/", "Dashboard")}${navItem("projects", "/projects/", "Projects")}${navItem("forecasting", "/forecasting/", "Forecasting")}${navItem("about", "/about/", "About")}</nav>
+      <nav class="site-nav" aria-label="Primary navigation">${navItem("dashboard", "/", "Dashboard")}${navItem("projects", "/projects/", "Projects")}${navItem("forecasting", "/forecasting/", "Forecasting")}${navItem("data", "/data/", "Data")}${navItem("about", "/about/", "About")}</nav>
       <span class="status-pill"><span></span>Public beta · Forecast v2.2</span>
     </div>
   </header>`;
@@ -256,7 +262,7 @@ const footer = `
     <div class="footer-grid">
       <div class="footer-brand"><a class="brand" href="/"><span class="brand-mark">UK</span><span>Renewable Intelligence</span></a><p>Open UK renewable-project intelligence for planning evidence, screening and delivery research.</p></div>
       <nav class="footer-column" aria-label="Platform links"><strong>Platform</strong><a href="/">Dashboard</a><a href="/#projects">Project Explorer</a><a href="/#workbench">Screening Workbench</a><a href="/#scenario">Scenario Analysis</a></nav>
-      <nav class="footer-column" aria-label="Research links"><strong>Research</strong><a href="/forecasting/">Forecasting</a><a href="/projects/">Project Directory</a><a href="/about/">About</a><a href="${repdSource}">Official REPD Source ↗</a></nav>
+      <nav class="footer-column" aria-label="Research links"><strong>Research</strong><a href="/forecasting/">Forecasting</a><a href="/projects/">Project Directory</a><a href="/data/">Data &amp; Downloads</a><a href="/about/">About</a><a href="${repdSource}">Official REPD Source ↗</a></nav>
       <nav class="footer-column" aria-label="Development links"><strong>Development</strong><a href="${githubSource}">Source Code ↗</a><a href="https://uk-renewable-project-screening.streamlit.app/">Modelling Workspace ↗</a></nav>
     </div>
     <div class="footer-bottom"><span>Designed and engineered by HJ Nakamura · Mechanical Engineering, Imperial College London</span><span>Forecast v2.2 · Ranking signal only · Not investment advice</span></div>
@@ -269,16 +275,28 @@ function pageShell({ title, description, canonicalPath, body, structuredData, he
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <meta name="author" content="HJ Nakamura">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/${contentAssetName}">
   <link rel="canonical" href="${canonical}">
+  <link rel="alternate" hreflang="en-GB" href="${canonical}">
+  <link rel="alternate" hreflang="x-default" href="${canonical}">
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="theme-color" content="#102633">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="UK Renewable Intelligence">
+  <meta property="og:locale" content="en_GB">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${publicOrigin}/og.png">
+  <meta property="og:image:alt" content="UK Renewable Intelligence project data and forecasting dashboard">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="${publicOrigin}/og.png">
+  <meta name="twitter:image:alt" content="UK Renewable Intelligence project data and forecasting dashboard">
   <title>${escapeHtml(title)}</title>
   <script type="application/ld+json">${jsonLd(structuredData)}</script>
   ${head}
@@ -293,29 +311,41 @@ const homeStructuredData = {
     {
       "@type": "WebSite",
       "@id": `${publicOrigin}/#website`,
-      name: "UK Renewable Infrastructure Intelligence",
+      name: "UK Renewable Intelligence",
+      alternateName: "UK Renewable Energy Project Database and Forecasting",
       url: `${publicOrigin}/`,
-      description: "Searchable UK renewable project intelligence with planning evidence, screening tools and an audited delivery-ranking signal.",
+      description: "Search 13,009 UK renewable energy planning records, explore project maps and compare an audited two-year delivery-ranking signal.",
       inLanguage: "en-GB",
+      publisher: { "@id": `${authorUrl}/#person` },
+    },
+    {
+      "@type": "Person",
+      "@id": `${authorUrl}/#person`,
+      name: "HJ Nakamura",
+      url: authorUrl,
+      affiliation: { "@type": "CollegeOrUniversity", name: "Imperial College London" },
     },
     {
       "@type": "Dataset",
       "@id": `${publicOrigin}/#dataset`,
-      name: "UK Renewable Infrastructure Intelligence project snapshot",
-      description: "A searchable snapshot of UK renewable infrastructure planning records, enriched with screening scores and an audited relative delivery signal.",
-      url: `${publicOrigin}/`,
+      name: "UK Renewable Energy Project Database",
+      description: "A searchable dataset of 13,009 UK renewable energy planning records with technology, capacity, location, planning status and transparent research enrichments.",
+      url: `${publicOrigin}/data/`,
+      sameAs: repdSource,
       isBasedOn: repdSource,
       isAccessibleForFree: true,
       temporalCoverage: `2019-09-25/${summary.latestSnapshot}`,
-      spatialCoverage: "United Kingdom",
+      spatialCoverage: { "@type": "Place", name: "United Kingdom" },
       version: summary.latestSnapshot,
+      dateModified: siteLastModified,
+      creator: { "@id": `${authorUrl}/#person` },
+      publisher: { "@id": `${authorUrl}/#person` },
       keywords: "UK renewable energy projects, REPD, planning pipeline, offshore wind, solar, battery storage, project forecasting",
       variableMeasured: ["Installed capacity", "Planning stage", "Technology", "Location", "Relative two-year delivery signal"],
-      distribution: {
-        "@type": "DataDownload",
-        contentUrl: `${publicOrigin}/projects-index.json`,
-        encodingFormat: "application/json",
-      },
+      distribution: [
+        { "@type": "DataDownload", name: "UK renewable energy projects CSV", contentUrl: `${publicOrigin}/${publicDatasetCsv}`, encodingFormat: "text/csv" },
+        { "@type": "DataDownload", name: "UK renewable energy projects JSON index", contentUrl: `${publicOrigin}/projects-index.json`, encodingFormat: "application/json" },
+      ],
     },
   ],
 };
@@ -425,7 +455,7 @@ function projectPage(project) {
     <section class="section source-box"><strong>Source and scope.</strong> Project facts derive from the <a href="${repdSource}">official DESNZ Renewable Energy Planning Database quarterly extract</a>. Delivery signals and screening scores are research enrichments by this platform; public data does not reveal private finance, land, supply-chain or contract terms.</section>`;
 
   return pageShell({
-    title: `${name} renewable project | UK Renewable Intelligence`,
+    title: `${name} – REPD ${String(project.ref_id).padStart(5, "0")} UK Renewable Project`,
     description,
     canonicalPath: projectPath(project),
     body,
@@ -463,7 +493,7 @@ function directoryPage(page) {
       ${directoryPagination(page, "bottom")}
     </section>`;
   return pageShell({
-    title: `UK renewable project directory${page > 1 ? ` – page ${page}` : ""} | UK Renewable Intelligence`,
+    title: `UK Renewable Energy Project Database${page > 1 ? ` – Page ${page}` : ""} | Renewable Intelligence`,
     description: `Browse UK renewable energy planning projects, capacities, technologies, development stages and audited relative delivery signals. Page ${page} of ${directoryPageCount}.`,
     canonicalPath: path,
     body,
@@ -531,8 +561,8 @@ const driverRows = [...driverRegistry.drivers]
   </tr>`).join("");
 
 const forecastingPage = pageShell({
-  title: "Renewable Project Delivery Signal | UK Renewable Intelligence",
-  description: "An audited relative delivery signal for prioritising UK renewable projects, with rolling-origin validation, release gates and transparent limitations.",
+  title: "UK Renewable Energy Forecasting & Project Rankings",
+  description: "Explore 6,189 UK renewable projects with an audited AI-enhanced two-year delivery ranking, capacity outlooks, maps, scenarios and transparent model evidence.",
   canonicalPath: "/forecasting/",
   bodyClass: "forecasting-page",
   head: `<link rel="preload" href="/forecast-data.json" as="fetch" crossorigin><link rel="stylesheet" href="/assets/${forecastingStyleAssetName}"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">`,
@@ -670,6 +700,116 @@ const forecastingPage = pageShell({
   },
 });
 
+const csvFields = [
+  ["ref_id", "ref_id"],
+  ["site_name", "site_name"],
+  ["operator", "operator"],
+  ["technology", "technology"],
+  ["development_stage", "stage"],
+  ["capacity_mw", "capacity_mw"],
+  ["region", "region"],
+  ["county", "county"],
+  ["country", "country"],
+  ["planning_authority", "planning_authority"],
+  ["planning_reference", "planning_reference"],
+  ["latitude", "latitude"],
+  ["longitude", "longitude"],
+  ["planning_submitted", "planning_submitted"],
+  ["planning_granted", "planning_granted"],
+  ["construction_started", "under_construction"],
+  ["operational", "operational"],
+  ["record_updated", "record_updated"],
+  ["delivery_signal_percentile", "delivery_signal_score"],
+  ["screening_score", "screening_score"],
+  ["screening_risk", "screening_risk"],
+];
+const publicDataset = `${csvFields.map(([label]) => csvEscape(label)).join(",")}\n${projects.map((project) => (
+  csvFields.map(([, field]) => csvEscape(project[field])).join(",")
+)).join("\n")}\n`;
+
+const dataPage = pageShell({
+  title: "UK Renewable Energy Project Database – Free Data Download",
+  description: `Search and download ${formatNumber(projects.length)} UK renewable energy planning records covering wind, solar, storage and other technologies, sourced from the official REPD.`,
+  canonicalPath: "/data/",
+  body: `
+    <section class="page-hero">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Data</nav>
+      <p class="eyebrow">Open renewable energy data · Snapshot ${escapeHtml(formatDate(summary.latestSnapshot))}</p>
+      <h1>UK Renewable Energy Project Database</h1>
+      <p class="lede">Search or download ${formatNumber(projects.length)} UK renewable energy planning records covering wind, solar, battery storage and other technologies. Each record links to its permanent evidence page and the latest public status from the official Renewable Energy Planning Database.</p>
+      <div class="actions"><a class="button primary" href="/${publicDatasetCsv}" download>Download project data (CSV)</a><a class="button secondary" href="/projects/">Browse all projects</a><a class="button secondary" href="/#projects">Search interactively</a></div>
+      <nav class="page-jump" aria-label="Data page sections"><span>Data</span><a href="#coverage">Coverage</a><a href="#fields">Fields</a><a href="#downloads">Downloads</a><a href="#provenance">Source &amp; Method</a></nav>
+    </section>
+    <section class="section" id="coverage"><div class="section-heading"><div><p class="eyebrow">United Kingdom coverage</p><h2>Renewable Project Coverage</h2></div><p>A source-backed national planning snapshot designed for project discovery, screening and reproducible analysis.</p></div>
+      <div class="grid">
+        <article class="card metric-card span-4"><span>Planning records</span><strong>${formatNumber(projects.length)}</strong><small>Permanent, indexable project pages</small></article>
+        <article class="card metric-card span-4"><span>Forecast-linked projects</span><strong>${formatNumber(forecastProjects.length)}</strong><small>Active projects with a relative two-year delivery signal</small></article>
+        <article class="card metric-card span-4"><span>Source snapshot</span><strong>${escapeHtml(formatDate(summary.latestSnapshot))}</strong><small>Latest REPD snapshot represented in this release</small></article>
+      </div>
+    </section>
+    <section class="section" id="fields"><div class="section-heading"><div><p class="eyebrow">Data dictionary</p><h2>Project Fields</h2></div><p>Exported fields remain legible and analysis-ready while preserving direct links back to the public evidence.</p></div>
+      <div class="fact-grid">
+        <div><span>Identity</span><strong>REPD reference, site name, operator or applicant</strong></div>
+        <div><span>Technology</span><strong>Technology category and reported capacity in MW</strong></div>
+        <div><span>Location</span><strong>Country, region, county and available coordinates</strong></div>
+        <div><span>Planning</span><strong>Authority, planning reference, development stage and dated milestones</strong></div>
+        <div><span>Research enrichment</span><strong>Screening score, risk band and relative delivery-signal percentile</strong></div>
+        <div><span>Important limitation</span><strong>The delivery signal is a relative rank, not a probability or investment recommendation</strong></div>
+      </div>
+    </section>
+    <section class="section" id="downloads"><div class="section-heading"><div><p class="eyebrow">Machine-readable access</p><h2>Data Downloads</h2></div><p>Use CSV for analysis or the smaller JSON index for browser applications. Project evidence is also available on the permanent record pages.</p></div>
+      <div class="grid">
+        <article class="card span-6"><h3>Project Dataset (CSV)</h3><p class="note">${formatNumber(projects.length)} rows with public planning fields and clearly labelled research enrichments.</p><div class="actions"><a class="button primary" href="/${publicDatasetCsv}" download>Download CSV</a></div></article>
+        <article class="card span-6"><h3>Project Index (JSON)</h3><p class="note">A compact machine-readable index used by the interactive project explorer.</p><div class="actions"><a class="button secondary" href="/projects-index.json">Open JSON</a></div></article>
+      </div>
+    </section>
+    <section class="section" id="provenance"><div class="section-heading"><div><p class="eyebrow">Provenance and governance</p><h2>Data Source &amp; Methodology</h2></div></div>
+      <article class="card"><p class="note">Public project facts derive from the official DESNZ Renewable Energy Planning Database quarterly extract. This platform normalises records for search and adds transparent screening and forecasting research. It does not replace the source publication, and public data cannot reveal private finance, land, supply-chain or contract terms.</p><div class="actions"><a class="button secondary" href="${repdSource}">Open official REPD source</a><a class="button secondary" href="/forecasting/">Review forecast validation</a><a class="button secondary" href="${githubSource}">Inspect source code</a></div></article>
+    </section>`,
+  structuredData: {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${publicOrigin}/data/#page`,
+        name: "UK Renewable Energy Project Database",
+        url: `${publicOrigin}/data/`,
+        dateModified: siteLastModified,
+        isPartOf: { "@id": `${publicOrigin}/#website` },
+        mainEntity: { "@id": `${publicOrigin}/#dataset` },
+      },
+      {
+        "@type": "Dataset",
+        "@id": `${publicOrigin}/#dataset`,
+        name: "UK Renewable Energy Project Database",
+        description: `A searchable and downloadable dataset of ${formatNumber(projects.length)} UK renewable energy planning records with technology, capacity, location, planning status and transparent research enrichments.`,
+        url: `${publicOrigin}/data/`,
+        sameAs: repdSource,
+        isBasedOn: repdSource,
+        isAccessibleForFree: true,
+        temporalCoverage: `2019-09-25/${summary.latestSnapshot}`,
+        spatialCoverage: { "@type": "Place", name: "United Kingdom" },
+        version: summary.latestSnapshot,
+        dateModified: siteLastModified,
+        creator: { "@type": "Person", name: "HJ Nakamura", url: authorUrl },
+        keywords: ["UK renewable energy projects", "Renewable Energy Planning Database", "REPD", "offshore wind projects", "solar projects", "battery storage projects", "renewable project forecasting"],
+        variableMeasured: csvFields.map(([label]) => label),
+        distribution: [
+          { "@type": "DataDownload", name: "UK renewable energy projects CSV", contentUrl: `${publicOrigin}/${publicDatasetCsv}`, encodingFormat: "text/csv" },
+          { "@type": "DataDownload", name: "UK renewable energy projects JSON index", contentUrl: `${publicOrigin}/projects-index.json`, encodingFormat: "application/json" },
+        ],
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${publicOrigin}/` },
+          { "@type": "ListItem", position: 2, name: "Data", item: `${publicOrigin}/data/` },
+        ],
+      },
+    ],
+  },
+});
+
 const aboutPage = pageShell({
   title: "About UK Renewable Infrastructure Intelligence",
   description: "An open engineering portfolio project that turns the UK Renewable Energy Planning Database into searchable project intelligence, mapping and an audited delivery signal.",
@@ -709,9 +849,12 @@ const aboutPage = pageShell({
   },
 });
 
-const staticUrls = ["/", "/projects/", "/forecasting/", "/about/", ...Array.from({ length: directoryPageCount - 1 }, (_, index) => directoryPath(index + 2))];
-const sitemapUrls = [...staticUrls, ...projects.map(projectPath)];
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls.map((path) => `  <url><loc>${escapeXml(`${publicOrigin}${path}`)}</loc><lastmod>${escapeXml(summary.latestSnapshot)}</lastmod></url>`).join("\n")}\n</urlset>\n`;
+const staticUrls = ["/", "/projects/", "/forecasting/", "/data/", "/about/", ...Array.from({ length: directoryPageCount - 1 }, (_, index) => directoryPath(index + 2))];
+const sitemapEntries = [
+  ...staticUrls.map((path) => ({ path, lastModified: siteLastModified })),
+  ...projects.map((project) => ({ path: projectPath(project), lastModified: siteLastModified })),
+];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries.map(({ path, lastModified }) => `  <url><loc>${escapeXml(`${publicOrigin}${path}`)}</loc><lastmod>${escapeXml(lastModified)}</lastmod></url>`).join("\n")}\n</urlset>\n`;
 const robots = `User-agent: *\nAllow: /\n\nSitemap: ${publicOrigin}/sitemap.xml\n`;
 
 const copyAsset = async (sourcePath, publishedPath, destination) => {
@@ -738,6 +881,7 @@ await Promise.all([
   writeFile(resolve(output, "projects-index.json"), JSON.stringify(projectIndex)),
   writeFile(resolve(output, "project-details.json"), JSON.stringify(projectDetails)),
   writeFile(resolve(output, "forecast-data.json"), JSON.stringify(forecastData)),
+  writeFile(resolve(output, publicDatasetCsv), publicDataset),
   writeFile(resolve(output, "forecast-audit.json"), JSON.stringify(forecastAudit)),
   writeFile(resolve(output, "forecast-challenger.json"), JSON.stringify(forecastChallenger)),
   writeFile(resolve(output, "external-driver-registry.json"), JSON.stringify(driverRegistry)),
@@ -753,6 +897,7 @@ await Promise.all([
 
 await Promise.all([
   mkdir(resolve(output, "forecasting"), { recursive: true }).then(() => writeFile(resolve(output, "forecasting/index.html"), forecastingPage)),
+  mkdir(resolve(output, "data"), { recursive: true }).then(() => writeFile(resolve(output, "data/index.html"), dataPage)),
   mkdir(resolve(output, "about"), { recursive: true }).then(() => writeFile(resolve(output, "about/index.html"), aboutPage)),
 ]);
 
