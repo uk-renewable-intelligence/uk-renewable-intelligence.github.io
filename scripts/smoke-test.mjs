@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const output = resolve(root, "dist-static");
-const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, forecasting, forecastData, dataPage, datasetCsv, about, directory, challenger, driverRegistry] = await Promise.all([
+const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, verification, forecasting, forecastData, dataPage, datasetCsv, about, directory, challenger, driverRegistry] = await Promise.all([
   readFile(resolve(output, "index.html"), "utf8"),
   readFile(resolve(output, "404.html"), "utf8"),
   readFile(resolve(output, "dashboard-summary.json"), "utf8").then(JSON.parse),
@@ -12,6 +12,7 @@ const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, f
   readFile(resolve(output, "project-details.json"), "utf8").then(JSON.parse),
   readFile(resolve(output, "sitemap.xml"), "utf8"),
   readFile(resolve(output, "robots.txt"), "utf8"),
+  readFile(resolve(output, "google66671dc9a2a42b9c.html"), "utf8"),
   readFile(resolve(output, "forecasting/index.html"), "utf8"),
   readFile(resolve(output, "forecast-data.json"), "utf8").then(JSON.parse),
   readFile(resolve(output, "data/index.html"), "utf8"),
@@ -174,6 +175,7 @@ assert.equal((sitemap.match(/<url>/g) || []).length, 13_040);
 assert.match(sitemap, /<loc>https:\/\/uk-renewable-intelligence\.github\.io\/data\/<\/loc><lastmod>2026-09-12<\/lastmod>/);
 assert.match(sitemap, new RegExp(`<loc>https://uk-renewable-intelligence.github.io/projects/${forecastProject.ref_id}/</loc>`));
 assert.match(robots, /Sitemap: https:\/\/uk-renewable-intelligence\.github\.io\/sitemap\.xml/);
+assert.equal(verification.trim(), "google-site-verification: google66671dc9a2a42b9c.html");
 assert.doesNotMatch(forecasting, /\/Users\/|wenpc/);
 
 const [summarySize, indexSize, detailsSize, forecastSize] = await Promise.all([

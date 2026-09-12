@@ -893,6 +893,7 @@ await Promise.all([
   writeFile(resolve(output, ".nojekyll"), ""),
   copyAsset("public/og-v3.png", "og.png", resolve(output, "og.png")),
   copyAsset("public/favicon.svg", "favicon.svg", resolve(output, "favicon.svg")),
+  copyFile(resolve(root, "public/google66671dc9a2a42b9c.html"), resolve(output, "google66671dc9a2a42b9c.html")),
 ]);
 
 await Promise.all([
