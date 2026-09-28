@@ -1,4 +1,7 @@
 .DS_Store
 dist-static/
+# Generated pages belong only in dist-static; src/index.html is the entry point.
+/index.html
+/404.html
 scripts/__pycache__/
 src/dashboard-data.json

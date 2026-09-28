@@ -98,6 +98,9 @@ h3 { font-size: 20px; font-weight: 700; }
 .timeline li:last-child { border-bottom: 0; }
 .timeline strong { color: var(--ink); }
 .factor-list { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 10px; line-height: 1.65; }
+.review-steps { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.review-steps li + li { margin-top: 10px; }
+.review-steps a, .review-steps strong { font-weight: 650; }
 .directory-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
 .directory-list a { display: grid; grid-template-columns: 1fr auto; gap: 12px; min-height: 64px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; background: white; color: var(--ink); text-decoration: none; }
 .directory-list a:hover { border-color: #9fc8c3; background: #fbfdfd; }
