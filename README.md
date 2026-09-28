@@ -101,6 +101,6 @@ The [companion notebook](analysis/forecast_audit.ipynb) summarises the saved aud
 
 GitHub Pages uses **GitHub Actions**. The workflow builds, verifies and deploys **only `dist-static/`**. Root `index.html` and `404.html` are intentionally absent and ignored so an obsolete generated interface cannot contradict the source. Historical versions remain recoverable in Git history.
 
-The [About page](https://uk-renewable-intelligence.github.io/about/) also links to the related [Formula Student telemetry debrief](https://imperial-fs-telemetry.streamlit.app/) and its [source](https://github.com/hj-nakamura421/imperial-fs-telemetry).
+The [About page](https://uk-renewable-intelligence.github.io/about/) also links to the [Formula Student EV Test-Data Debrief](https://imperial-fs-telemetry.streamlit.app/), an independent portfolio prototype using synthetic demonstration data, and its [engineering case study and source](https://github.com/hj-nakamura421/imperial-fs-telemetry#readme). It is not an official Imperial Formula Student tool or team dataset.
 
 HJ Nakamura · Mechanical Engineering, Imperial College London
