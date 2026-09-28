@@ -4,6 +4,11 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const output = resolve(root, "dist-static");
+const packageInfo = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+for (const generatedPage of ["index.html", "404.html"]) {
+  await assert.rejects(stat(resolve(root, generatedPage)), { code: "ENOENT" },
+    `${generatedPage} must be generated in dist-static, not retained as a stale root page`);
+}
 const [html, notFound, summary, projectIndex, projectDetails, sitemap, robots, verification, forecasting, forecastData, dataPage, datasetCsv, about, directory, challenger, driverRegistry] = await Promise.all([
   readFile(resolve(output, "index.html"), "utf8"),
   readFile(resolve(output, "404.html"), "utf8"),
@@ -71,7 +76,8 @@ assert.equal(new Set(projectIndex.map((project) => String(project.ref_id))).size
 assert.equal(summary.model.rollingAudit.horizons["2"].testRows, 4_019);
 assert.equal(summary.model.publicRelease.status, "ranking_only");
 assert.equal(summary.model.publicRelease.version, "2.2");
-assert.equal(summary.model.publicRelease.primaryModel, "empirical survival rank with AI tie-breaker");
+assert.equal(packageInfo.version.split(".").slice(0, 2).join("."), summary.model.publicRelease.version);
+assert.equal(summary.model.publicRelease.primaryModel, "empirical survival rank with CatBoost tie-breaker");
 assert.equal(summary.model.publicRelease.probabilityRelease, "withheld");
 assert.ok(Math.abs(summary.model.rollingAudit.horizons["2"].rocAuc - 0.7911550869) < 1e-9);
 assert.ok(challenger.horizons["2"].ranking_promotion_passed);
@@ -92,7 +98,7 @@ forecastIndex.forEach((project) => {
   if (!coarseBuckets.has(key)) coarseBuckets.set(key, []);
   coarseBuckets.get(key).push(project.delivery_signal_score);
 });
-assert.ok([...coarseBuckets.values()].some((scores) => new Set(scores).size > 1), "AI tie-breaker should resolve at least one empirical-score tie");
+assert.ok([...coarseBuckets.values()].some((scores) => new Set(scores).size > 1), "CatBoost tie-breaker should resolve at least one empirical-score tie");
 
 for (let index = 0; index < sourceData.projects.length; index += 1) {
   const sourceProject = sourceData.projects[index];
@@ -126,6 +132,9 @@ assert.match(forecasting, /Horizon Release Matrix/);
 assert.match(forecasting, /Ranking &amp; Reliability Evidence/);
 assert.match(forecasting, /Delivery-Signal Usage/);
 assert.match(forecasting, /Temporal Validation Controls/);
+assert.match(forecasting, /id="model-definitions"/);
+assert.match(forecasting, /Weighted by uncalibrated research scores; not a validated capacity forecast/);
+assert.doesNotMatch(forecasting, /AI-enhanced|AI tie-breaker|3-year expected capacity/);
 assert.match(forecasting, /Macroeconomic &amp; Policy Scenarios/);
 assert.doesNotMatch(forecasting, /Probability of what gets built/);
 assert.match(forecasting, /class="page-hero"/);
@@ -146,7 +155,12 @@ assert.match(html, /Developer market stress/);
 assert.match(html, /scenario-drivers/);
 assert.match(about, /Engineering portfolio case study/);
 assert.match(about, /UK Renewable Intelligence Platform/);
-assert.match(about, /Engineering Capabilities/);
+assert.match(about, /Engineering Contributions/);
+assert.match(about, /2-Minute Review Tour/);
+assert.match(about, /id="review-tour"/);
+assert.match(about, /Validation Findings &amp; Design Decisions/);
+assert.match(about, /Forecast Release Evolution/);
+assert.match(about, /Evidence limited to 15 independent REPD snapshots/);
 assert.match(about, /Formula Student Telemetry Debrief/);
 assert.match(about, /Post-run review, not just charts/);
 assert.match(about, /https:\/\/imperial-fs-telemetry\.streamlit\.app\//);
@@ -172,7 +186,7 @@ assert.match(dataPage, /uk-renewable-energy-projects\.csv/);
 assert.equal(datasetCsv.trim().split("\n").length, 13_010);
 assert.match(datasetCsv.split("\n")[0], /"ref_id","site_name","operator","technology"/);
 assert.equal((sitemap.match(/<url>/g) || []).length, 13_040);
-assert.match(sitemap, /<loc>https:\/\/uk-renewable-intelligence\.github\.io\/data\/<\/loc><lastmod>2026-09-12<\/lastmod>/);
+assert.match(sitemap, /<loc>https:\/\/uk-renewable-intelligence\.github\.io\/data\/<\/loc><lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
 assert.match(sitemap, new RegExp(`<loc>https://uk-renewable-intelligence.github.io/projects/${forecastProject.ref_id}/</loc>`));
 assert.match(robots, /Sitemap: https:\/\/uk-renewable-intelligence\.github\.io\/sitemap\.xml/);
 assert.equal(verification.trim(), "google-site-verification: google66671dc9a2a42b9c.html");

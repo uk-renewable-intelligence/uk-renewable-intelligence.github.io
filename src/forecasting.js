@@ -99,7 +99,7 @@ function renderForecastKpis() {
   forecastQuery("#forecast-kpi-projects").textContent = formatForecastNumber(forecastState.filtered.length);
   forecastQuery("#forecast-kpi-capacity").textContent = formatForecastMw(aggregate.capacity);
   forecastQuery("#forecast-kpi-expected").textContent = formatForecastMw(aggregate.expected);
-  forecastQuery("#forecast-kpi-expected-label").textContent = `${forecastState.horizon}-year expected capacity`;
+  forecastQuery("#forecast-kpi-expected-label").textContent = `${forecastState.horizon}-year research capacity`;
   forecastQuery("#forecast-kpi-stronger").textContent = formatForecastMw(aggregate.strongerCapacity);
   forecastQuery("#forecast-kpi-coverage").textContent = `${(100 * coverage).toFixed(1)}% moderate+ public-data coverage`;
   forecastQuery("#forecast-filter-status").textContent = `${formatForecastNumber(forecastState.filtered.length)} projects · ${forecastFilterDescription()} · ${forecastState.horizon}-year aggregate outlook`;
@@ -125,8 +125,8 @@ function renderForecastOverview() {
   const threeYear = forecastAggregate(forecastState.filtered, 3);
   const incremental = Math.max(0, threeYear.expected - twoYear.expected);
   forecastQuery("#forecast-outlook-strip").innerHTML = `
-    <article><span>Expected within 2 years</span><strong>${formatForecastMw(twoYear.expected)}</strong><small>Aggregate research outlook</small></article>
-    <article><span>Expected within 3 years</span><strong>${formatForecastMw(threeYear.expected)}</strong><small>Aggregate research outlook</small></article>
+    <article><span>2-year research capacity</span><strong>${formatForecastMw(twoYear.expected)}</strong><small>Uncalibrated aggregate estimate</small></article>
+    <article><span>3-year research capacity</span><strong>${formatForecastMw(threeYear.expected)}</strong><small>Uncalibrated aggregate estimate</small></article>
     <article><span>Year 2–3 increment</span><strong>${formatForecastMw(incremental)}</strong><small>Additional modelled capacity</small></article>`;
 
   const technologyRows = forecastGroup(forecastState.filtered, "technology")

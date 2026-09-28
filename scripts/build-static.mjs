@@ -8,7 +8,7 @@ const publicOrigin = "https://uk-renewable-intelligence.github.io";
 const repdSource = "https://www.gov.uk/government/publications/renewable-energy-planning-database-quarterly-extract";
 const githubSource = "https://github.com/uk-renewable-intelligence/uk-renewable-intelligence.github.io";
 const authorUrl = "https://github.com/hj-nakamura421";
-const siteLastModified = "2026-09-12";
+const siteLastModified = "2026-09-28";
 const publicDatasetCsv = "uk-renewable-energy-projects.csv";
 
 const [template, styles, app, contentStyles, forecastingStyles, forecastingApp, forecastAudit, forecastChallenger, challengerScores, driverRegistry] = await Promise.all([
@@ -137,7 +137,7 @@ const summary = {
       probabilityRelease: "withheld",
       fiveYearOutput: "withheld",
       scoreBuckets: new Set(forecastProjects.map(deliverySignalScore)).size,
-      primaryModel: "empirical survival rank with AI tie-breaker",
+      primaryModel: "empirical survival rank with CatBoost tie-breaker",
       definition: "Percentile rank of the audited two-year empirical delivery score, with richer project evidence used only to order projects tied in the same empirical bucket.",
       challengerDecision: forecastChallenger.two_year_decision,
       challengerAuc: forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc,
@@ -562,7 +562,7 @@ const driverRows = [...driverRegistry.drivers]
 
 const forecastingPage = pageShell({
   title: "UK Renewable Energy Forecasting & Project Rankings",
-  description: "Explore 6,189 UK renewable projects with an audited AI-enhanced two-year delivery ranking, capacity outlooks, maps, scenarios and transparent model evidence.",
+  description: "Explore 6,189 UK renewable projects with a temporally validated two-year delivery ranking, research capacity outlooks, maps, scenarios and model evidence.",
   canonicalPath: "/forecasting/",
   bodyClass: "forecasting-page",
   head: `<link rel="preload" href="/forecast-data.json" as="fetch" crossorigin><link rel="stylesheet" href="/assets/${forecastingStyleAssetName}"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">`,
@@ -572,9 +572,10 @@ const forecastingPage = pageShell({
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / Forecasting</nav>
       <p class="eyebrow">Forecast workbench · Snapshot ${escapeHtml(formatDate(forecastAudit.latest_snapshot))}</p>
       <h1>UK Renewable Delivery Outlook</h1>
-      <p class="lede">Explore ${formatNumber(forecastProjects.length)} active projects, compare aggregate capacity outlooks, rank delivery evidence, map the pipeline and stress-test external conditions. The public two-year signal is a validated relative ranking—not a literal project probability.</p>
+      <p class="lede">Models tested on later project cohorts supported useful two-year ranking, but literal probabilities failed the calibration release gate. Explore ${formatNumber(forecastProjects.length)} active projects using the empirical survival baseline and CatBoost tie-breaker, then inspect the evidence behind the release.</p>
+      <p class="note">Evidence limit: ${formatNumber(forecastAudit.snapshots)} independent REPD snapshots. The capacity aggregates below retain experimental research scores and inherit their calibration limitations.</p>
       <div class="actions"><a class="button primary" href="#forecast-workbench">Open forecast explorer</a><a class="button secondary" href="#model-evidence">Review model evidence</a></div>
-      <nav class="page-jump" aria-label="Forecasting page sections"><span>Forecasting</span><a href="#forecast-workbench">Explorer</a><a href="#model-evidence">Model Evidence</a><a href="#forecast-performance">Release Matrix</a><a href="#external-inputs">External Inputs</a></nav>
+      <nav class="page-jump" aria-label="Forecasting page sections"><span>Forecasting</span><a href="#forecast-workbench">Explorer</a><a href="#model-evidence">Model Evidence</a><a href="#forecast-performance">Release Matrix</a><a href="#model-definitions">Model Definitions</a><a href="#external-inputs">External Inputs</a></nav>
     </section>
     <section class="forecast-workbench" id="forecast-workbench" aria-busy="true">
       <div class="forecast-loading" id="forecast-loading"><span>Loading ${formatNumber(forecastProjects.length)} forecast records…</span></div>
@@ -596,7 +597,7 @@ const forecastingPage = pageShell({
         <div class="forecast-kpis" aria-label="Forecast summary">
           <article class="forecast-kpi"><span>Projects modelled</span><strong id="forecast-kpi-projects">—</strong><small>Active, non-operational records in the current forecast universe</small></article>
           <article class="forecast-kpi"><span>Pipeline capacity</span><strong id="forecast-kpi-capacity">—</strong><small>Gross capacity before timing and delivery adjustment</small></article>
-          <article class="forecast-kpi"><span id="forecast-kpi-expected-label">3-year expected capacity</span><strong id="forecast-kpi-expected">—</strong><small>Probability-weighted aggregate research outlook; not a project-level promise</small></article>
+          <article class="forecast-kpi"><span id="forecast-kpi-expected-label">3-year research capacity</span><strong id="forecast-kpi-expected">—</strong><small>Weighted by uncalibrated research scores; not a validated capacity forecast</small></article>
           <article class="forecast-kpi"><span>Stronger-signal capacity</span><strong id="forecast-kpi-stronger">—</strong><small>Projects at or above the 75th delivery-signal percentile</small><small id="forecast-kpi-coverage">—</small></article>
         </div>
 
@@ -608,11 +609,11 @@ const forecastingPage = pageShell({
         </div>
 
         <section class="forecast-panel" id="forecast-panel-overview" role="tabpanel" aria-labelledby="forecast-tab-overview" data-forecast-panel="overview">
-          <div class="forecast-panel-heading"><div><p class="eyebrow">Aggregate forecast</p><h2>Pipeline Outlook</h2></div><p>Filters update every metric and chart. Forecast capacity is aggregated across projects; exact project probabilities remain outside the public decision surface.</p></div>
+          <div class="forecast-panel-heading"><div><p class="eyebrow">Experimental aggregate</p><h2>Pipeline Outlook</h2></div><p>Filters update every metric and chart. These capacity estimates use uncalibrated research scores. Aggregation does not resolve their probability error; use them to explore assumptions, not as validated delivery forecasts.</p></div>
           <div class="forecast-outlook-strip" id="forecast-outlook-strip"></div>
           <div class="forecast-chart-grid">
-            <article class="forecast-chart-card"><h3>Expected Capacity by Technology</h3><p class="forecast-chart-subtitle"><span data-forecast-horizon-label>3-year</span> aggregate outlook · highest-capacity technologies</p><div class="forecast-bars" id="forecast-technology-bars"></div></article>
-            <article class="forecast-chart-card"><h3>Expected Capacity by Stage</h3><p class="forecast-chart-subtitle"><span data-forecast-horizon-label>3-year</span> aggregate outlook · current public planning stage</p><div class="forecast-bars" id="forecast-stage-bars"></div></article>
+            <article class="forecast-chart-card"><h3>Research Capacity by Technology</h3><p class="forecast-chart-subtitle"><span data-forecast-horizon-label>3-year</span> uncalibrated aggregate · highest-capacity technologies</p><div class="forecast-bars" id="forecast-technology-bars"></div></article>
+            <article class="forecast-chart-card"><h3>Research Capacity by Stage</h3><p class="forecast-chart-subtitle"><span data-forecast-horizon-label>3-year</span> uncalibrated aggregate · current public planning stage</p><div class="forecast-bars" id="forecast-stage-bars"></div></article>
           </div>
         </section>
 
@@ -656,11 +657,11 @@ const forecastingPage = pageShell({
     <section class="section" id="model-evidence"><div class="section-heading"><div><p class="eyebrow">Validated challenger</p><h2>Forecast Model Evidence</h2></div><p>The richer model is used only where it proved useful: resolving ties inside the stable empirical ordering.</p></div>
       <div class="forecast-evidence-summary">
         <article class="card metric-card"><span>Empirical ranking AUC</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.empirical_survival.roc_auc).toFixed(3)}</strong><small>Stage, technology and annual delivery hazard</small></article>
-        <article class="card metric-card"><span>AI tie-break ranking AUC</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc).toFixed(3)}</strong><small>+${(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc - forecastChallenger.horizons["2"].latest_cohort.empirical_survival.roc_auc).toFixed(3)} on the untouched latest cohort</small></article>
+        <article class="card metric-card"><span>CatBoost tie-break ranking AUC</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc).toFixed(3)}</strong><small>+${(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.roc_auc - forecastChallenger.horizons["2"].latest_cohort.empirical_survival.roc_auc).toFixed(3)} on the latest held-out cohort</small></article>
         <article class="card metric-card"><span>Average precision</span><strong>${Number(forecastChallenger.horizons["2"].latest_cohort.enriched_tiebreak.average_precision).toFixed(3)}</strong><small>Up from ${Number(forecastChallenger.horizons["2"].latest_cohort.empirical_survival.average_precision).toFixed(3)} for the empirical ranker</small></article>
       </div>
-      <article class="card model-composition"><div><strong>Primary ordering</strong><span>Empirical survival score</span></div><i>+</i><div><strong>AI tie-break evidence</strong><span>Stage age · milestones · capacity revisions · developer history · regional track record · CfD · portfolio pressure</span></div><i>→</i><div><strong>Public output</strong><span>Relative percentile only</span></div></article>
-      <p class="note">The standalone CatBoost challenger was rejected as a replacement because its overall ranking was weaker. Its within-bucket ordering improved both AUC and average precision, passed the pre-declared ranking gate and is the only AI component promoted to Forecast v2.2.</p>
+      <article class="card model-composition"><div><strong>Primary ordering</strong><span>Empirical survival score</span></div><i>+</i><div><strong>CatBoost tie-break evidence</strong><span>Stage age · milestones · capacity revisions · developer history · regional track record · CfD · portfolio pressure</span></div><i>→</i><div><strong>Public ranking output</strong><span>Relative percentile</span></div></article>
+      <p class="note">The standalone CatBoost challenger was rejected as a replacement because its overall ranking was weaker. Its within-bucket ordering improved both AUC and average precision and passed the ranking gate. Forecast v2.2 uses it only to order projects tied under the empirical baseline.</p>
     </section>
     <section class="section" id="forecast-performance"><div class="section-heading"><div><p class="eyebrow">Product governance</p><h2>Horizon Release Matrix</h2></div><p>Each horizon is released independently. Ranking quality cannot justify publishing an uncalibrated percentage.</p></div>
       <article class="card table-scroll"><table class="audit-table"><thead><tr><th>Horizon</th><th>Test sample</th><th>Ranking AUC</th><th>Observed</th><th>Raw mean</th><th>Probability error</th><th>Public output</th></tr></thead><tbody>${auditRows}</tbody></table></article>
@@ -677,6 +678,10 @@ const forecastingPage = pageShell({
       <article class="card span-4"><span class="step-number">02</span><h3>Verify</h3><p class="note">Open the project record and inspect its planning stage, dated milestones, authority, CfD evidence and recorded constraints.</p></article>
       <article class="card span-4"><span class="step-number">03</span><h3>Stress</h3><p class="note">Use the Scenario Lab to test how rates, construction costs, grid delay and policy assumptions change portfolio delivery pressure.</p></article>
     </div></section>
+    <section class="section" id="model-definitions"><div class="section-heading"><div><p class="eyebrow">Plain-English methodology</p><h2>Model Definitions</h2></div></div><div class="grid">
+      <article class="card span-6"><h3>Survival Modelling</h3><p class="note">Estimates how the chance of reaching operation changes as a project spends longer in development.</p></article>
+      <article class="card span-6"><h3>Censoring</h3><p class="note">When the recorded history ends before a project's outcome is known, only the observed follow-up contributes to training. An unresolved project is not automatically labelled a failure.</p></article>
+    </div></section>
     <section class="section" id="validation-controls"><div class="section-heading"><div><p class="eyebrow">Leakage controls</p><h2>Temporal Validation Controls</h2></div></div><div class="grid">
       <article class="card span-6"><h3>Fully Observed Outcomes</h3><p class="note">An origin is evaluated only when the entire forecast horizon has elapsed. Unresolved recent projects are censored rather than labelled as failures.</p></article>
       <article class="card span-6"><h3>Project-Purged Temporal Splits</h3><p class="note">Test projects are removed from survival-training rows. Features such as developer track record count only information dated before the forecast origin.</p></article>
@@ -688,14 +693,14 @@ const forecastingPage = pageShell({
       <p class="note">${escapeHtml(driverRegistry.principle)}</p>
     </section>
     <section class="section" id="external-scenarios"><div class="section-heading"><div><p class="eyebrow">Politics, prices and external conditions</p><h2>Macroeconomic &amp; Policy Scenarios</h2></div></div><article class="card"><p class="note">Bank Rate, wholesale electricity prices, construction and material costs, grid delay, developer-financing stress, policy support and CfD assumptions can materially change delivery conditions. However, ${formatNumber(forecastAudit.snapshots)} independent REPD dates are not enough to estimate credible macroeconomic coefficients. The <a href="/#scenario">Scenario Lab</a> therefore exposes them as bounded sensitivities, separate from the trained project ranking. This avoids pretending that thousands of projects sharing one date are thousands of independent observations of politics or inflation.</p></article></section>
-    <section class="section source-box" id="audit-decision"><strong>Public release decision.</strong> Promote the empirical ranking with the validated AI tie-breaker; continue withholding literal probabilities. The saved evidence is available in <a href="/forecast-challenger.json">forecast-challenger.json</a>, with the original calibration audit in <a href="/forecast-audit.json">forecast-audit.json</a>.</section>`,
+    <section class="section source-box" id="audit-decision"><strong>Public release decision.</strong> Publish the empirical ranking with the evaluated CatBoost tie-breaker. Withhold literal project probabilities from the ranking interface because calibration did not clear the release criterion. Experimental capacity aggregates retain research scores and remain uncalibrated. The saved evidence is available in <a href="/forecast-challenger.json">forecast-challenger.json</a>, with the original calibration audit in <a href="/forecast-audit.json">forecast-audit.json</a>.</section>`,
   structuredData: {
     "@context": "https://schema.org",
     "@type": "TechArticle",
     headline: "UK renewable project delivery-signal methodology and validation",
     description: "Rolling-origin validation and release governance for a relative UK renewable-project delivery signal.",
     url: `${publicOrigin}/forecasting/`,
-    dateModified: forecastAudit.latest_snapshot,
+    dateModified: siteLastModified,
     isPartOf: { "@id": `${publicOrigin}/#website` },
   },
 });
@@ -812,28 +817,50 @@ const dataPage = pageShell({
 
 const aboutPage = pageShell({
   title: "About UK Renewable Infrastructure Intelligence",
-  description: "An open engineering portfolio project that turns the UK Renewable Energy Planning Database into searchable project intelligence, mapping and an audited delivery signal.",
+  description: "An engineering case study in renewable project histories, temporal validation and withholding unreliable probabilities while releasing useful delivery rankings.",
   canonicalPath: "/about/",
   body: `
     <section class="page-hero">
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> / About</nav>
       <p class="eyebrow">Engineering portfolio case study</p>
       <h1>UK Renewable Intelligence Platform</h1>
-      <p class="lede">UK Renewable Infrastructure Intelligence is an open, public-data decision-support platform developed by HJ Nakamura, a Mechanical Engineering student at Imperial College London. It combines data engineering, geospatial analysis, forecast governance and product design in one deployable system.</p>
-      <div class="actions"><a class="button primary" href="${githubSource}">View source code</a><a class="button secondary" href="/#workbench">Open the engineering tools</a></div>
-      <nav class="page-jump" aria-label="About page sections"><span>On this page</span><a href="#platform-purpose">Purpose</a><a href="#engineering-capabilities">Capabilities</a><a href="#related-engineering">Vehicle-data work</a><a href="#responsible-use">Responsible Use</a></nav>
+      <p class="lede">An independent decision-support platform built from ${formatNumber(projects.length)} UK renewable planning records. I reconstructed project histories, developed time-to-operation models and tested them on later project cohorts.</p>
+      <p class="lede">When validation showed useful relative ranking but unreliable literal probabilities, I withheld project probabilities from the public ranking interface and redesigned the output around the evidence the model could support.</p>
+      <p class="note">HJ Nakamura · Mechanical Engineering, Imperial College London · Evidence limited to ${formatNumber(forecastAudit.snapshots)} independent REPD snapshots</p>
+      <div class="actions"><a class="button primary" href="#review-tour">2-minute portfolio tour</a><a class="button secondary" href="${githubSource}">View source code</a></div>
+      <nav class="page-jump" aria-label="About page sections"><span>On this page</span><a href="#review-tour">Review Tour</a><a href="#engineering-capabilities">Engineering</a><a href="#engineering-decisions">Decisions</a><a href="#development-timeline">Timeline</a><a href="#related-engineering">Vehicle-data work</a></nav>
     </section>
+    <section class="section" id="review-tour"><div class="section-heading"><div><p class="eyebrow">For portfolio reviewers</p><h2>2-Minute Review Tour</h2></div><p>A short route through the product, validation evidence and implementation.</p></div><article class="card"><ol class="review-steps">
+      <li><a href="/">Open the live dashboard</a> and inspect a renewable project record.</li>
+      <li><a href="/forecasting/#model-evidence">Review the forecasting evidence</a> and the empirical baseline comparison.</li>
+      <li><a href="/forecasting/#forecast-performance">See why literal probabilities were withheld</a> in the horizon release matrix.</li>
+      <li><a href="https://github.com/hj-nakamura421/uk-renewable-energy-dashboard/blob/main/METHODOLOGY.md">Read the modelling methodology</a> and inspect the <a href="${githubSource}/blob/main/analysis/forecast_audit.py">audit source</a>.</li>
+    </ol></article></section>
     <section class="section" id="platform-purpose"><div class="section-heading"><div><p class="eyebrow">Product thesis</p><h2>Platform Purpose</h2></div><p>The official REPD is the source of truth for public planning records. This platform adds the layer needed for screening: search, permanent evidence pages, comparable delivery signals, maps, portfolios and external-risk scenarios.</p></div><div class="grid">
       <article class="card metric-card span-4"><span>Planning records</span><strong>${formatNumber(summary.kpis.datasetProjects)}</strong><small>Complete current explorer snapshot</small></article>
       <article class="card metric-card span-4"><span>Linked delivery signals</span><strong>${formatNumber(summary.kpis.forecastCoverage)}</strong><small>Active projects joined to the audited ranking universe</small></article>
-      <article class="card metric-card span-4"><span>Mapped records</span><strong>${formatNumber(projects.filter((project) => Number.isFinite(Number(project.latitude)) && Number.isFinite(Number(project.longitude))).length)}</strong><small>Valid coordinates in the public map workbench</small></article>
+      <article class="card metric-card span-4"><span>Independent source snapshots</span><strong>${formatNumber(forecastAudit.snapshots)}</strong><small>Limited historical evidence for validation and external effects</small></article>
     </div></section>
-    <section class="section" id="engineering-capabilities"><div class="section-heading"><div><p class="eyebrow">Engineering scope</p><h2>Engineering Capabilities</h2></div></div><div class="grid">
-      <article class="card span-6"><h3>Data Engineering</h3><p class="note">Normalises irregular REPD releases into a project × snapshot panel, documents fallback entity keys, preserves source fields and validates duplicates, ranges and freshness.</p></article>
-      <article class="card span-6"><h3>Forecast Governance</h3><p class="note">Uses right-censored survival targets, project-purged temporal holdouts, probability calibration challengers, independent horizon gates and explicit abstention when evidence is insufficient.</p></article>
-      <article class="card span-6"><h3>Mechanical Engineering Context</h3><p class="note">Includes an offshore wind quick calculator for capacity factor, turbine count, CAPEX, revenue and displaced carbon, with visible techno-economic assumptions.</p></article>
-      <article class="card span-6"><h3>Public Product Delivery</h3><p class="note">Runs as a static, accessible site with no account, no sleeping server, lazy project data, shareable explorer state, permanent project pages and automated integrity checks.</p></article>
+    <section class="section" id="engineering-capabilities"><div class="section-heading"><div><p class="eyebrow">What I engineered</p><h2>Engineering Contributions</h2></div><p>Implementation links make each part of the project inspectable.</p></div><div class="grid">
+      <article class="card span-6"><h3>Project Histories</h3><p class="note">Reconciled changing REPD snapshots, normalised schemas and linked records into project histories. Added checks for duplicates, missing fields, coordinate ranges and freshness. <a href="https://github.com/hj-nakamura421/uk-renewable-energy-dashboard/blob/main/src/repd_clean.py">Data pipeline</a></p></article>
+      <article class="card span-6"><h3>Time-to-Operation Modelling</h3><p class="note">Built censored survival targets and compared empirical, logistic and CatBoost candidates. Designed temporal holdouts that remove test projects from training histories. <a href="https://github.com/hj-nakamura421/uk-renewable-energy-dashboard/blob/main/src/model.py">Model implementation</a></p></article>
+      <article class="card span-6"><h3>Model Release Gates</h3><p class="note">Evaluated ranking and probability reliability independently. Published the calibration audit and limited the release to the two-year ranking supported by the evidence. <a href="${githubSource}/blob/main/analysis/forecast_audit.py">Calibration audit</a> · <a href="${githubSource}/blob/main/analysis/forecast_challenger.py">Challenger evaluation</a></p></article>
+      <article class="card span-6"><h3>Public Interface</h3><p class="note">Built the JavaScript/Leaflet explorer, maps, comparison tools, shortlists and offshore engineering calculator. Exposed economic and policy assumptions through separate scenario controls. <a href="${githubSource}/blob/main/src/app.js">Interface source</a></p></article>
+      <article class="card span-6"><h3>Testing &amp; Deployment</h3><p class="note">Built permanent project pages and automated record-integrity checks and GitHub Pages deployment. The tests compare every source field after rebuilding all ${formatNumber(projects.length)} records. <a href="${githubSource}/blob/main/scripts/smoke-test.mjs">Integrity checks</a> · <a href="${githubSource}/blob/main/.github/workflows/deploy-pages.yml">Deployment workflow</a></p></article>
+      <article class="card span-6"><h3>External Scenarios</h3><p class="note">Kept rates, electricity prices, material costs, grid delay and policy assumptions separate from the trained ranking. With only ${formatNumber(forecastAudit.snapshots)} independent source dates, the data cannot support reliable causal estimates of those effects. <a href="/forecasting/#external-inputs">Driver register</a></p></article>
     </div></section>
+    <section class="section" id="engineering-decisions"><div class="section-heading"><div><p class="eyebrow">What failed / what I changed</p><h2>Validation Findings &amp; Design Decisions</h2></div></div><div class="grid">
+      <article class="card span-6"><h3>Incomplete Follow-Up</h3><p class="note">Earlier fixed-horizon evaluation included cohorts before their full outcome window had elapsed. I rebuilt the targets with censoring and evaluated fully observed cohorts: unresolved projects contribute observed history without being labelled failures.</p></article>
+      <article class="card span-6"><h3>Probability Reliability</h3><p class="note">Calibration candidates failed the probability release gate. I replaced individual percentages with a relative ranking and withheld the five-year output. Experimental capacity aggregates still use uncalibrated research scores; aggregation does not repair that limitation.</p></article>
+      <article class="card span-6"><h3>Challenger Performance</h3><p class="note">The standalone CatBoost model ranked worse than the empirical baseline. I retained the baseline and used CatBoost only to order tied projects, improving latest-cohort ROC-AUC from 0.767 to 0.791.</p></article>
+      <article class="card span-6"><h3>Historical Evidence</h3><p class="note">Thousands of projects do not create thousands of independent observations of the same economic conditions. I kept the ${formatNumber(forecastAudit.snapshots)}-snapshot limit visible and treated macroeconomic scenarios as explicit sensitivities.</p></article>
+    </div></section>
+    <section class="section" id="development-timeline"><div class="section-heading"><div><p class="eyebrow">Development history</p><h2>Forecast Release Evolution</h2></div></div><article class="card"><ol class="review-steps">
+      <li><strong>Initial prototype / v1:</strong> project exploration and fixed-horizon prediction; later review identified incomplete-follow-up bias.</li>
+      <li><strong>Model v2:</strong> censored survival modelling, temporal holdouts and empirical/logistic/CatBoost comparison in the Python research workspace.</li>
+      <li><strong>Public ranking release:</strong> calibration audit, project-level probability withdrawal and separate horizon release gates.</li>
+      <li><strong>Forecast v2.2:</strong> empirical ordering with the evaluated CatBoost tie-breaker, interactive research workbench and published evidence.</li>
+    </ol></article></section>
     <section class="section" id="related-engineering"><div class="section-heading"><div><p class="eyebrow">Related engineering work</p><h2>Formula Student Telemetry Debrief</h2></div><p>A companion vehicle-data project applies the same emphasis on data quality, transparent assumptions and reviewable outputs to EV drivetrain test data.</p></div><div class="grid">
       <article class="card span-8"><h3>Post-run review, not just charts</h3><p class="note">The tool validates uploaded telemetry logs, groups motor-temperature, inverter-temperature and voltage-sag threshold breaches into review windows, and calculates timestamp-aware mechanical and electrical energy by lap. The committed session is explicitly synthetic: it demonstrates the workflow without implying access to or deployment on a team’s private data.</p></article>
       <article class="card span-4"><h3>Reviewer path</h3><p class="note">Run the debrief in a browser, then inspect the Python analysis layer, tests and dashboard implementation.</p><div class="actions"><a class="button primary" href="https://imperial-fs-telemetry.streamlit.app/">Open live debrief</a><a class="button secondary" href="https://github.com/hj-nakamura421/imperial-fs-telemetry">View source</a></div></article>
